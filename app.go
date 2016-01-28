@@ -29,9 +29,10 @@ func (app *App) Run(args []string) {
 	}
 
 	cmd := args[1]
-	//_ := args[2:]
+	arg := args[2:]
 
 	if cmd, ok := app.commands[cmd]; ok {
+		fmt.Println(arg)
 		cmd.Action()
 		return
 	}

@@ -14,7 +14,6 @@ Example:
 package main
 
 import (
-	"cli-app/commands"
 	"github.com/ionutmilica/cli"
 	"os"
 )
@@ -22,6 +21,7 @@ import (
 func main() {
 	app := cli.New()
 	app.AddCommand(BuildCommand)
+	app.AddCommand(ClearCommand)
 	app.Run(os.Args)
 }
 
@@ -30,7 +30,17 @@ func BuildCommand() *cli.Command {
 		Name:      "Build",
 		Signature: "build {what}",
 		Action: func() {
-			fmt.Println("Build command!")
+			println("Build command!")
+		},
+	}
+}
+
+func ClearCommand() *cli.Command {
+	return &cli.Command{
+		Name:      "Clear",
+		Signature: "clear",
+		Action: func() {
+			println("Clear command!")
 		},
 	}
 }
