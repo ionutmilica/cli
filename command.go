@@ -6,5 +6,9 @@ type Command struct {
 	Description string
 	Author      string
 	Signature   string
+	Flags       []*Flag
 	Action      func()
+}
+
+func NewCommand() {
 }

@@ -12,7 +12,7 @@ type pattern struct {
 }
 
 func (p *pattern) parse() {
-	re := regexp.MustCompile("{([^{}]+)}")
+	re := regexp.MustCompile("{([^{}]*)}")
 	matches := re.FindAllStringSubmatch(p.raw, -1)
 
 	for _, m := range matches {
@@ -22,27 +22,68 @@ func (p *pattern) parse() {
 			panic("Flag cannot be empty! Syntax like {} is not acceptable!")
 		}
 
-		var kind uint
-		var name string
-
-		if strings.HasPrefix(flag, "--") {
-			name = flag[2:]
-			kind = longOptionFlag
-		} else if flag[0] == '-' {
-			name = flag[1:]
-			kind = optionFlag
+		if flag[0] == '-' {
+			p.parseOption(flag)
 		} else {
-			name = flag
-			kind = valueFlag
+			p.parseArgument(flag)
 		}
-
-		p.flags = append(p.flags, &Flag{
-			kind: kind,
-			name: name,
-		})
-
-		// Value flag
 	}
+}
+
+func (p *pattern) parseOption(opt string) {
+	var description string
+	var kind int8
+
+	if strings.HasPrefix(opt, "--") {
+		kind = longOptionFlag
+	} else {
+		kind = optionFlag
+	}
+
+	if strings.Contains(opt, " : ") {
+		parts := strings.Split(opt, " : ")
+		opt = parts[0]
+		description = parts[1]
+	}
+
+	p.flags = append(p.flags, &Flag{
+		kind:        kind,
+		name:        opt,
+		description: description,
+	})
+}
+
+func (p *pattern) parseArgument(arg string) {
+	var description string
+	var options int8
+
+	if strings.Contains(arg, " : ") {
+		parts := strings.Split(arg, " : ")
+		arg = parts[0]
+		description = parts[1]
+	}
+
+	if strings.HasSuffix(arg, "?*") {
+		options = isArray | optional
+		arg = strings.TrimSuffix(arg, "?*")
+	}
+
+	if strings.HasSuffix(arg, "*") {
+		options = isArray | required
+		arg = strings.TrimSuffix(arg, "*")
+	}
+
+	if strings.HasSuffix(arg, "?") {
+		options = optional
+		arg = strings.TrimSuffix(arg, "?")
+	}
+
+	p.flags = append(p.flags, &Flag{
+		kind:        argumentFlag,
+		options:     options,
+		name:        arg,
+		description: description,
+	})
 }
 
 func (p *pattern) match(args []string) {
