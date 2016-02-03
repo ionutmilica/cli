@@ -17,12 +17,5 @@ type Flag struct {
 	options     int8
 	name        string
 	description string
-}
-
-func (f Flag) isMatched(val string) {
-
-}
-
-func NewFlag() *Flag {
-	return &Flag{}
+	value       string // Default value for flag
 }

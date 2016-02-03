@@ -6,16 +6,15 @@ import (
 	"strings"
 )
 
-type pattern struct {
-	raw   string
-	flags []*Flag
-}
-
-func (p *pattern) parse() {
+func (cmd *Command) parse() {
 	re := regexp.MustCompile("{([^{}]*)}")
-	matches := re.FindAllStringSubmatch(p.raw, -1)
+	matches := re.FindAllStringSubmatch(cmd.Signature, -1)
+
+	//
+	hadArrayArg := false
 
 	for _, m := range matches {
+		var f *Flag
 		flag := m[1]
 
 		if len(flag) == 0 {
@@ -23,14 +22,22 @@ func (p *pattern) parse() {
 		}
 
 		if flag[0] == '-' {
-			p.parseOption(flag)
+			f = cmd.parseOption(flag)
 		} else {
-			p.parseArgument(flag)
+			if hadArrayArg {
+				panic("Command cannot have argument after an array argument!")
+			}
+
+			f = cmd.parseArgument(flag)
+
+			if f.options&isArray == isArray {
+				hadArrayArg = true
+			}
 		}
 	}
 }
 
-func (p *pattern) parseOption(opt string) {
+func (cmd *Command) parseOption(opt string) *Flag {
 	var description string
 	var kind int8
 
@@ -46,14 +53,17 @@ func (p *pattern) parseOption(opt string) {
 		description = parts[1]
 	}
 
-	p.flags = append(p.flags, &Flag{
+	flag := &Flag{
 		kind:        kind,
 		name:        opt,
 		description: description,
-	})
+	}
+	cmd.Flags = append(cmd.Flags, flag)
+
+	return flag
 }
 
-func (p *pattern) parseArgument(arg string) {
+func (cmd *Command) parseArgument(arg string) *Flag {
 	var description string
 	var options int8
 
@@ -63,40 +73,30 @@ func (p *pattern) parseArgument(arg string) {
 		description = parts[1]
 	}
 
-	if strings.HasSuffix(arg, "?*") {
+	switch {
+	case strings.HasSuffix(arg, "?*"):
 		options = isArray | optional
 		arg = strings.TrimSuffix(arg, "?*")
-	}
-
-	if strings.HasSuffix(arg, "*") {
+		break
+	case strings.HasSuffix(arg, "*"):
 		options = isArray | required
 		arg = strings.TrimSuffix(arg, "*")
-	}
-
-	if strings.HasSuffix(arg, "?") {
+		break
+	case strings.HasSuffix(arg, "?"):
 		options = optional
 		arg = strings.TrimSuffix(arg, "?")
+		break
+	default:
+		options = 0
 	}
 
-	p.flags = append(p.flags, &Flag{
+	flag := &Flag{
 		kind:        argumentFlag,
 		options:     options,
 		name:        arg,
 		description: description,
-	})
-}
-
-func (p *pattern) match(args []string) {
-
-}
-
-// Takes a pattern and parse it in pieces
-func newPattern(signature string) *pattern {
-	pattern := &pattern{
-		raw:   signature,
-		flags: make([]*Flag, 0),
 	}
-	pattern.parse()
+	cmd.Flags = append(cmd.Flags, flag)
 
-	return pattern
+	return flag
 }

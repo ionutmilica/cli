@@ -4,8 +4,21 @@ import (
 	"testing"
 )
 
+func makeCmd(signature string) Command {
+	return Command{
+		Signature: signature,
+	}
+}
+
+func toFlags(signature string) []*Flag {
+	cmd := makeCmd(signature)
+	cmd.parse()
+	return cmd.Flags
+}
+
 func TestPatternParseArgumentFlag(t *testing.T) {
-	flags := newPattern("{user} {other}").flags
+	flags := toFlags("{user} {other}")
+
 	expectedFlags := []string{"user", "other"}
 
 	if len(flags) != len(expectedFlags) {
@@ -21,7 +34,7 @@ func TestPatternParseArgumentFlag(t *testing.T) {
 }
 
 func TestPatternParseArgumentWithDescription(t *testing.T) {
-	flags := newPattern("{file : This argument it's used for amazing stuff!}").flags
+	flags := toFlags("{file : This argument it's used for amazing stuff!}")
 
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
@@ -38,7 +51,7 @@ func TestPatternParseArgumentWithDescription(t *testing.T) {
 }
 
 func TestPatternWithOptionalArgument(t *testing.T) {
-	flags := newPattern("{user?}").flags
+	flags := toFlags("{user?}")
 
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
@@ -51,7 +64,7 @@ func TestPatternWithOptionalArgument(t *testing.T) {
 }
 
 func TestPatternWithArrayArgument(t *testing.T) {
-	flags := newPattern("{user*}").flags
+	flags := toFlags("{user*}")
 
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
@@ -64,7 +77,7 @@ func TestPatternWithArrayArgument(t *testing.T) {
 }
 
 func TestPatternWithOptionalArrayArgument(t *testing.T) {
-	flags := newPattern("{user?*}").flags
+	flags := toFlags("{user?*}")
 
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
