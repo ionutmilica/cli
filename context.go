@@ -45,7 +45,7 @@ func (ctx *Context) parse(args []string, flags []*Flag) {
 			current := len(ctx.Arguments)
 			if hasIndex(len(arguments), current) {
 				ctx.Arguments[arguments[current].name] = []string{arg}
-			} else if hasIndex(len(arguments), current-1) && arguments[current-1].options&isArray == isArray {
+			} else if hasIndex(len(arguments), current-1) && arguments[current-1].isArrayArgument() {
 				ctx.Arguments[arguments[current-1].name] = append(ctx.Arguments[arguments[current-1].name], arg)
 			} else {
 				panic("To many arguments!")

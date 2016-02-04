@@ -57,14 +57,21 @@ func (cmd *Command) parseOption(opt string) *Flag {
 	}
 
 	switch {
-
+	case strings.HasSuffix(opt, "="):
+		options = valueOptional
+		opt = strings.TrimSuffix(opt, "=")
+		break
+	case strings.HasSuffix(opt, "=*"):
+		options = valueOptional | valueArray
+		opt = strings.TrimSuffix(opt, "=*")
+		break
 	}
 
 	flag := &Flag{
 		kind:        kind,
 		name:        opt,
 		description: description,
-		options: options,
+		options:     options,
 	}
 	cmd.Flags = append(cmd.Flags, flag)
 

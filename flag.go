@@ -13,10 +13,10 @@ const (
 	required = 4
 
 	// Flags for options
-	valueNone = 6
+	valueNone     = 6
 	valueRequired = 8
 	valueOptional = 10
-	valueArray = 12
+	valueArray    = 12
 )
 
 type Flag struct {
@@ -28,15 +28,15 @@ type Flag struct {
 }
 
 func (f Flag) isOptionalArgument() bool {
-	return f.options & optional == optional
+	return f.options&optional == optional
 }
 
 func (f Flag) isArrayArgument() bool {
-	return f.options & isArray == isArray
+	return f.options&isArray == isArray
 }
 
 func (f Flag) isRequiredArgument() bool {
-	return f.options & required == required
+	return f.options&required == required
 }
 
 func (f Flag) acceptValue() bool {
@@ -44,15 +44,15 @@ func (f Flag) acceptValue() bool {
 }
 
 func (f Flag) isValueArray() bool {
-	return f.options & valueArray == valueArray
+	return f.options&valueArray == valueArray
 }
 
 func (f Flag) isValueOptional() bool {
-	return f.options & valueOptional == valueOptional
+	return f.options&valueOptional == valueOptional
 }
 
 func (f Flag) isValueRequired() bool {
-	return f.options & valueRequired == valueRequired
+	return f.options&valueRequired == valueRequired
 }
 
 func (f Flag) String() string {
