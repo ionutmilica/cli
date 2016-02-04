@@ -7,7 +7,7 @@ import (
 
 type Context struct {
 	Arguments map[string][]string
-	Options   map[string]string
+	Options   map[string][]string
 }
 
 func (ctx *Context) parse(args []string, flags []*Flag) {
@@ -22,7 +22,9 @@ func (ctx *Context) parse(args []string, flags []*Flag) {
 		}
 	}
 
-	for _, arg := range args {
+	i := 0
+	for i < len(args) {
+		arg := args[i]
 		switch {
 		case strings.HasPrefix(arg, "--"): // We matched and long option
 			var value string
@@ -38,8 +40,31 @@ func (ctx *Context) parse(args []string, flags []*Flag) {
 				panic(fmt.Sprintf("The `--%s` option does not exist.", arg))
 			}
 
-			println(value)
+			option := options[arg]
 
+			if value != "" && !option.acceptValue() {
+				panic(fmt.Sprintf("The `--%s` option does not accept a value!", arg))
+			}
+
+			if value == "" && option.acceptValue() && hasIndex(len(args), i+1) {
+				next := args[i+1]
+
+				if len(next) > 0 && next[0] != '-' {
+					value = next
+					i += 2
+				}
+			}
+
+			if value == "" {
+				if option.isValueRequired() {
+					panic(fmt.Sprintf("The `--%s` option requres a value!", arg))
+				}
+
+				if !option.isValueArray() && option.isValueOptional() {
+					value = option.value
+				}
+			}
+			ctx.Options[arg] = []string{value}
 			break
 		default: // We matched an argument
 			current := len(ctx.Arguments)
@@ -51,9 +76,10 @@ func (ctx *Context) parse(args []string, flags []*Flag) {
 				panic("To many arguments!")
 			}
 		}
-	}
 
-	fmt.Println(ctx.Arguments)
+		i++
+	}
+	fmt.Println(ctx.Options, ctx.Arguments)
 }
 
 func hasIndex(size int, i int) bool {
