@@ -2,7 +2,7 @@ package cli
 
 type FlagMgr struct {
 	arguments []*Flag
-	options map[string]*Flag
+	options   map[string]*Flag
 }
 
 func newFlagMgr(flags []*Flag) *FlagMgr {
@@ -37,7 +37,6 @@ func (mgr *FlagMgr) argument(i int) *Flag {
 func (mgr *FlagMgr) option(opt string) *Flag {
 	return mgr.options[opt]
 }
-
 
 func hasIndex(size int, i int) bool {
 	if size == 0 {

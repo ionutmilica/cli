@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -9,8 +10,8 @@ type Context struct {
 	Arguments map[string][]string
 	Options   map[string][]string
 
-	args	  []string
-	cursor	  int
+	args   []string
+	cursor int
 }
 
 func (ctx *Context) parse(args []string, mgr *FlagMgr) {
@@ -29,7 +30,6 @@ func (ctx *Context) parse(args []string, mgr *FlagMgr) {
 
 		ctx.cursor++
 	}
-	fmt.Println(ctx.Options, ctx.Arguments)
 }
 
 func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
@@ -72,15 +72,18 @@ func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
 	ctx.Options[arg] = []string{value}
 }
 
-func (ctx *Context) parseArgument(mgr *FlagMgr, arg string) {
+func (ctx *Context) parseArgument(mgr *FlagMgr, arg string) error {
 	current := len(ctx.Arguments)
+
 	if mgr.hasArgument(current) {
 		ctx.Arguments[mgr.argument(current).name] = []string{arg}
-	} else if mgr.hasArgument(current - 1) && mgr.argument(current-1).isArrayArgument() {
+	} else if mgr.hasArgument(current-1) && mgr.argument(current-1).isArrayArgument() {
 		ctx.Arguments[mgr.argument(current-1).name] = append(ctx.Arguments[mgr.argument(current-1).name], arg)
 	} else {
-		panic("To many arguments!")
+		return errors.New("To many arguments!")
 	}
+
+	return nil
 }
 
 func (ctx *Context) Confirm(message string) bool {
