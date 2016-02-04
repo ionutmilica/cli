@@ -45,7 +45,7 @@ func (app *App) createContext(args []string, flags []*Flag) *Context {
 		Arguments: make(map[string][]string, 0),
 		Options:   make(map[string][]string),
 	}
-	ctx.parse(args, flags)
+	ctx.parse(args, newFlagMgr(flags))
 
 	return ctx
 }

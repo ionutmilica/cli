@@ -8,89 +8,79 @@ import (
 type Context struct {
 	Arguments map[string][]string
 	Options   map[string][]string
+
+	args	  []string
+	cursor	  int
 }
 
-func (ctx *Context) parse(args []string, flags []*Flag) {
-	arguments := make([]*Flag, 0)
-	options := make(map[string]*Flag, 0)
+func (ctx *Context) parse(args []string, mgr *FlagMgr) {
+	ctx.args = args
+	ctx.cursor = 0
 
-	for _, flag := range flags {
-		if flag.kind == argumentFlag {
-			arguments = append(arguments, flag)
-		} else {
-			options[flag.name] = flag
-		}
-	}
-
-	i := 0
-	for i < len(args) {
-		arg := args[i]
+	for ctx.cursor < len(ctx.args) {
+		arg := args[ctx.cursor]
 		switch {
 		case strings.HasPrefix(arg, "--"): // We matched and long option
-			var value string
-			arg := arg[2:]
-
-			if strings.Contains(arg, "=") {
-				parts := strings.Split(arg, "=")
-				arg = parts[0]
-				value = parts[1]
-			}
-
-			if _, ok := options[arg]; !ok {
-				panic(fmt.Sprintf("The `--%s` option does not exist.", arg))
-			}
-
-			option := options[arg]
-
-			if value != "" && !option.acceptValue() {
-				panic(fmt.Sprintf("The `--%s` option does not accept a value!", arg))
-			}
-
-			if value == "" && option.acceptValue() && hasIndex(len(args), i+1) {
-				next := args[i+1]
-
-				if len(next) > 0 && next[0] != '-' {
-					value = next
-					i += 2
-				}
-			}
-
-			if value == "" {
-				if option.isValueRequired() {
-					panic(fmt.Sprintf("The `--%s` option requres a value!", arg))
-				}
-
-				if !option.isValueArray() && option.isValueOptional() {
-					value = option.value
-				}
-			}
-			ctx.Options[arg] = []string{value}
+			ctx.parseLongOption(mgr, arg)
 			break
 		default: // We matched an argument
-			current := len(ctx.Arguments)
-			if hasIndex(len(arguments), current) {
-				ctx.Arguments[arguments[current].name] = []string{arg}
-			} else if hasIndex(len(arguments), current-1) && arguments[current-1].isArrayArgument() {
-				ctx.Arguments[arguments[current-1].name] = append(ctx.Arguments[arguments[current-1].name], arg)
-			} else {
-				panic("To many arguments!")
-			}
+			ctx.parseArgument(mgr, arg)
 		}
 
-		i++
+		ctx.cursor++
 	}
 	fmt.Println(ctx.Options, ctx.Arguments)
 }
 
-func hasIndex(size int, i int) bool {
-	if size == 0 {
-		return false
-	}
-	if i > -1 && i < size {
-		return true
+func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
+	var value string
+	arg = arg[2:]
+
+	if strings.Contains(arg, "=") {
+		parts := strings.Split(arg, "=")
+		arg = parts[0]
+		value = parts[1]
 	}
 
-	return false
+	if !mgr.hasOption(arg) {
+		panic(fmt.Sprintf("The `--%s` option does not exist.", arg))
+	}
+
+	option := mgr.option(arg)
+
+	if value != "" && !option.acceptValue() {
+		panic(fmt.Sprintf("The `--%s` option does not accept a value!", arg))
+	}
+
+	if value == "" && option.acceptValue() && hasIndex(len(ctx.args), ctx.cursor+1) {
+		next := ctx.args[ctx.cursor+1]
+		if len(next) > 0 && next[0] != '-' {
+			value = next
+			ctx.cursor += 2
+		}
+	}
+
+	if value == "" {
+		if option.isValueRequired() {
+			panic(fmt.Sprintf("The `--%s` option requres a value!", arg))
+		}
+
+		if !option.isValueArray() && option.isValueOptional() {
+			value = option.value
+		}
+	}
+	ctx.Options[arg] = []string{value}
+}
+
+func (ctx *Context) parseArgument(mgr *FlagMgr, arg string) {
+	current := len(ctx.Arguments)
+	if mgr.hasArgument(current) {
+		ctx.Arguments[mgr.argument(current).name] = []string{arg}
+	} else if mgr.hasArgument(current - 1) && mgr.argument(current-1).isArrayArgument() {
+		ctx.Arguments[mgr.argument(current-1).name] = append(ctx.Arguments[mgr.argument(current-1).name], arg)
+	} else {
+		panic("To many arguments!")
+	}
 }
 
 func (ctx *Context) Confirm(message string) bool {
