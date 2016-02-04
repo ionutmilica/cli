@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
+type App struct {
+	commands map[string]*Command
+}
+
 func New() *App {
 	return &App{
 		commands: make(map[string]*Command, 0),
 	}
-}
-
-type App struct {
-	commands map[string]*Command
 }
 
 func (app *App) AddCommand(cmdFunc func() *Command) {
@@ -21,21 +21,31 @@ func (app *App) AddCommand(cmdFunc func() *Command) {
 	app.commands[strings.ToLower(c.Name)] = c
 }
 
-func (app *App) Run(args []string) {
-	if len(args) == 1 {
+func (app *App) Run(osArgs []string) {
+	if len(osArgs) == 1 {
 		// No args
 		println("Those are the cmds!")
 		return
 	}
 
-	cmd := args[1]
-	arg := args[2:]
+	cmd := osArgs[1]
+	args := osArgs[2:]
 
 	if cmd, ok := app.commands[cmd]; ok {
-		fmt.Println(arg)
-		cmd.Action()
+		cmd.parse()
+		cmd.Action(app.createContext(args, cmd.Flags))
 		return
 	}
 
 	fmt.Printf("Command `%s` was not found!", cmd)
+}
+
+func (app *App) createContext(args []string, flags []*Flag) *Context {
+	ctx := &Context{
+		Arguments: make(map[string][]string, 0),
+		Options: make(map[string]string),
+	}
+	ctx.parse(args, flags)
+
+	return ctx
 }

@@ -40,11 +40,14 @@ func (cmd *Command) parse() {
 func (cmd *Command) parseOption(opt string) *Flag {
 	var description string
 	var kind int8
+	var options int8
 
 	if strings.HasPrefix(opt, "--") {
 		kind = longOptionFlag
+		opt = opt[2:]
 	} else {
 		kind = optionFlag
+		opt = opt[1:]
 	}
 
 	if strings.Contains(opt, " : ") {
@@ -53,10 +56,15 @@ func (cmd *Command) parseOption(opt string) *Flag {
 		description = parts[1]
 	}
 
+	switch {
+
+	}
+
 	flag := &Flag{
 		kind:        kind,
 		name:        opt,
 		description: description,
+		options: options,
 	}
 	cmd.Flags = append(cmd.Flags, flag)
 

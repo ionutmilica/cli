@@ -89,7 +89,15 @@ func TestPatternWithOptionalArrayArgument(t *testing.T) {
 	}
 }
 
-func TestPatternParse(t *testing.T) {
-	//newPattern("{user} {--lib=test} {--Q|queue")
-	//fmt.Println(pattern)
+func TestLongOptionParse(t *testing.T) {
+	flags := toFlags("{--test}")
+
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+
+	if flags[0].kind != longOptionFlag {
+		t.Errorf("Argument `test` should be longOptionFlag but got: %d", flags[0].kind)
+	}
 }

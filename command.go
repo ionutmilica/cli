@@ -7,8 +7,5 @@ type Command struct {
 	Author      string
 	Signature   string
 	Flags       []*Flag
-	Action      func()
-}
-
-func NewCommand() {
+	Action      func(*Context)
 }
