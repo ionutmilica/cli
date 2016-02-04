@@ -102,7 +102,7 @@ func (cmd *Command) parseArgument(arg string) *Flag {
 		arg = strings.TrimSuffix(arg, "?")
 		break
 	default:
-		options = 0
+		options = required
 	}
 
 	flag := &Flag{

@@ -18,6 +18,8 @@ func (ctx *Context) parse(args []string, mgr *FlagMgr) {
 	ctx.args = args
 	ctx.cursor = 0
 
+	// Validate arguments
+
 	for ctx.cursor < len(ctx.args) {
 		arg := args[ctx.cursor]
 		switch {
@@ -84,12 +86,4 @@ func (ctx *Context) parseArgument(mgr *FlagMgr, arg string) error {
 	}
 
 	return nil
-}
-
-func (ctx *Context) Confirm(message string) bool {
-	return true
-}
-
-func (ctx *Context) Info(message string) {
-	// print something
 }
