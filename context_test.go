@@ -46,6 +46,33 @@ func argumentTest(t *testing.T, flagMgr *FlagMgr, steps []ArgumentParseTest, ctx
 	}
 }
 
+func longOptionTest(t *testing.T, flagMgr *FlagMgr, steps []ArgumentParseTest, ctx *Context) {
+	for _, step := range steps {
+		err := ctx.parseLongOption(flagMgr, step.input)
+
+		if step.shouldFail && err == nil {
+			t.Errorf("Test should fail for `%s`", step.input)
+		}
+
+		if !step.shouldFail && err != nil {
+			t.Errorf("Got error: `%s` for input `%s`", err, step.input)
+		}
+
+		if step.shouldFail {
+			continue
+		}
+
+		if _, ok := ctx.Options[step.name]; !ok {
+			t.Errorf("Option `%s` not found!", step.name)
+		}
+
+		if !reflect.DeepEqual(step.values, ctx.Options[step.name]) && len(step.values) > 0 && len(ctx.Options[step.name]) > 0 {
+			t.Errorf("Expected values [%s] but got [%s]", step.values, ctx.Options[step.name])
+		}
+		ctx.cursor++
+	}
+}
+
 func TestParseArgument(t *testing.T) {
 	flags := []*Flag{
 		&Flag{
@@ -128,4 +155,52 @@ func TestParseArgumentArray(t *testing.T) {
 	}
 
 	argumentTest(t, flagMgr, steps, ctx)
+}
+
+func TestParseLongOption(t *testing.T) {
+	flags := []*Flag{
+		&Flag{
+			name:    "file",
+			kind:    longOptionFlag,
+			options: valueRequired,
+		},
+		&Flag{
+			name:    "use-something",
+			kind:    longOptionFlag,
+			options: valueNone,
+		},
+		&Flag{
+			name:    "output",
+			kind:    longOptionFlag,
+			options: valueOptional,
+		},
+	}
+	flagMgr := newFlagMgr(flags)
+
+	ctx := makeCtx()
+	ctx.cursor = 0
+	ctx.args = []string{"--file", "test.txt", "--use-something", "--output=file.out"}
+
+	steps := []ArgumentParseTest{
+		ArgumentParseTest{
+			name:       "file",
+			input:      "--file",
+			values:     []string{"test.txt"},
+			shouldFail: false,
+		},
+		ArgumentParseTest{
+			name:       "use-something",
+			input:      "--use-something",
+			values:     []string{},
+			shouldFail: false,
+		},
+		ArgumentParseTest{
+			name:       "output",
+			input:      "--output=file.out",
+			values:     []string{"file.out"},
+			shouldFail: false,
+		},
+	}
+
+	longOptionTest(t, flagMgr, steps, ctx)
 }

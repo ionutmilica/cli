@@ -63,7 +63,7 @@ func homeCommand(app *App) *Command {
 			fmt.Println("Usage:")
 			fmt.Println("\tapp command [arguments]")
 			fmt.Println("The commands are:")
-			for _,cmd := range app.Commands {
+			for _, cmd := range app.Commands {
 				if cmd.Name != "" {
 					fmt.Printf("\t%s - %s\n", cmd.Name, cmd.Description)
 				}

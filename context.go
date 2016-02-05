@@ -51,6 +51,7 @@ func (ctx *Context) parse(args []string, mgr *FlagMgr) error {
 	return nil
 }
 
+// Parses options like --opt, --opt=val --opt val according to the defined flags
 func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) error {
 	var value string
 	arg = arg[2:]
