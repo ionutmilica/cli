@@ -14,27 +14,44 @@ type Context struct {
 	cursor int
 }
 
-func (ctx *Context) parse(args []string, mgr *FlagMgr) {
+func (ctx *Context) parse(args []string, mgr *FlagMgr) error {
 	ctx.args = args
 	ctx.cursor = 0
-
-	// Validate arguments
 
 	for ctx.cursor < len(ctx.args) {
 		arg := args[ctx.cursor]
 		switch {
 		case strings.HasPrefix(arg, "--"): // We matched and long option
-			ctx.parseLongOption(mgr, arg)
+			if err := ctx.parseLongOption(mgr, arg); err != nil {
+				return err
+			}
 			break
 		default: // We matched an argument
-			ctx.parseArgument(mgr, arg)
+			if err := ctx.parseArgument(mgr, arg); err != nil {
+				return err
+			}
 		}
 
 		ctx.cursor++
 	}
+
+	// Validate arguments
+	requiredArgs := mgr.requiredArgs()
+
+	if len(requiredArgs) > len(ctx.Arguments) {
+		missing := []string{}
+		for _, arg := range requiredArgs {
+			if _, ok := ctx.Arguments[arg]; !ok {
+				missing = append(missing, arg)
+			}
+			return errors.New(fmt.Sprintf("Not enough arguments (missing: `%s`).", strings.Join(missing, ", ")))
+		}
+	}
+
+	return nil
 }
 
-func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
+func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) error {
 	var value string
 	arg = arg[2:]
 
@@ -45,13 +62,13 @@ func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
 	}
 
 	if !mgr.hasOption(arg) {
-		panic(fmt.Sprintf("The `--%s` option does not exist.", arg))
+		return errors.New(fmt.Sprintf("The `--%s` option does not exist.", arg))
 	}
 
 	option := mgr.option(arg)
 
 	if value != "" && !option.acceptValue() {
-		panic(fmt.Sprintf("The `--%s` option does not accept a value!", arg))
+		return errors.New(fmt.Sprintf("The `--%s` option does not accept a value!", arg))
 	}
 
 	if value == "" && option.acceptValue() && hasIndex(len(ctx.args), ctx.cursor+1) {
@@ -64,7 +81,7 @@ func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
 
 	if value == "" {
 		if option.isValueRequired() {
-			panic(fmt.Sprintf("The `--%s` option requres a value!", arg))
+			return errors.New(fmt.Sprintf("The `--%s` option requres a value!", arg))
 		}
 
 		if !option.isValueArray() && option.isValueOptional() {
@@ -72,6 +89,8 @@ func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) {
 		}
 	}
 	ctx.Options[arg] = []string{value}
+
+	return nil
 }
 
 func (ctx *Context) parseArgument(mgr *FlagMgr, arg string) error {

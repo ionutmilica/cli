@@ -10,7 +10,6 @@ I'm making this because I have a need for it on my GO web framework, VUA but als
 
 Example:
 ```go
-
 package main
 
 import (
@@ -25,26 +24,27 @@ func main() {
 	app.Run(os.Args)
 }
 
-func BuildCommand() *cli.Command {
+func BuildCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
-		Name:      "Build",
-		Signature: "build {what}",
-		Action: func() {
+		Name:        "Build",
+		Signature:   "{a} {b} {c} {--ion=}",
+		Description: "Build this project",
+		Action: func(ctx *cli.Context) {
 			println("Build command!")
 		},
 	}
 }
 
-func ClearCommand() *cli.Command {
+func ClearCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
-		Name:      "Clear",
-		Signature: "clear",
-		Action: func() {
+		Name:        "Clear",
+		Signature:   "clear",
+		Description: "Clears something from the project",
+		Action: func(ctx *cli.Context) {
 			println("Clear command!")
 		},
 	}
 }
-
 ````
 
 This project is under development so it's not production ready.

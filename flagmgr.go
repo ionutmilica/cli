@@ -19,6 +19,18 @@ func newFlagMgr(flags []*Flag) *FlagMgr {
 	return mgr
 }
 
+func (mgr *FlagMgr) requiredArgs() []string {
+	flags := []string{}
+
+	for _, arg := range mgr.arguments {
+		if arg.isRequiredArgument() {
+			flags = append(flags, arg.name)
+		}
+	}
+
+	return flags
+}
+
 func (mgr *FlagMgr) hasOption(opt string) bool {
 	if _, ok := mgr.options[opt]; !ok {
 		return false
