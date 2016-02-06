@@ -30,7 +30,7 @@ func (cmd *Command) parse() {
 
 			f = cmd.parseArgument(flag)
 
-			if f.options&isArray == isArray {
+			if f.isArray() {
 				hadArrayArg = true
 			}
 		}
@@ -106,9 +106,9 @@ func (cmd *Command) parseArgument(arg string) *Flag {
 	}
 
 	flag := &Flag{
+		name:        arg,
 		kind:        argumentFlag,
 		options:     options,
-		name:        arg,
 		description: description,
 	}
 	cmd.Flags = append(cmd.Flags, flag)

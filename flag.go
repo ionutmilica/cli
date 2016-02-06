@@ -19,39 +19,39 @@ const (
 	valueArray    = 64
 )
 
+/** Option flags **/
+
 type Flag struct {
 	kind        int8
-	options     int8
 	name        string
+	options     int8
 	description string
-	value       string // Default value for flag
-}
-
-func (f Flag) isOptionalArgument() bool {
-	return f.options&optional == optional
-}
-
-func (f Flag) isArrayArgument() bool {
-	return f.options&isArray == isArray
-}
-
-func (f Flag) isRequiredArgument() bool {
-	return f.options&required == required
+	value       string
+	data        []string
 }
 
 func (f Flag) acceptValue() bool {
-	return f.isValueOptional() || f.isValueRequired()
+	return f.isOptional() || f.isRequired()
 }
 
-func (f Flag) isValueArray() bool {
+func (f Flag) isArray() bool {
+	if f.kind == argumentFlag {
+		return f.options&isArray == isArray
+	}
 	return f.options&valueArray == valueArray
 }
 
-func (f Flag) isValueOptional() bool {
+func (f Flag) isOptional() bool {
+	if f.kind == argumentFlag {
+		return f.options&optional == optional
+	}
 	return f.options&valueOptional == valueOptional
 }
 
-func (f Flag) isValueRequired() bool {
+func (f Flag) isRequired() bool {
+	if f.kind == argumentFlag {
+		return f.options&required == required
+	}
 	return f.options&valueRequired == valueRequired
 }
 

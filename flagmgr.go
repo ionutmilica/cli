@@ -23,7 +23,7 @@ func (mgr *FlagMgr) requiredArgs() []string {
 	flags := []string{}
 
 	for _, arg := range mgr.arguments {
-		if arg.isRequiredArgument() {
+		if arg.isRequired() {
 			flags = append(flags, arg.name)
 		}
 	}
@@ -39,18 +39,7 @@ func (mgr *FlagMgr) hasOption(opt string) bool {
 }
 
 func (mgr *FlagMgr) hasArgument(i int) bool {
-	return hasIndex(len(mgr.arguments), i)
-}
-
-func (mgr *FlagMgr) argument(i int) *Flag {
-	return mgr.arguments[i]
-}
-
-func (mgr *FlagMgr) option(opt string) *Flag {
-	return mgr.options[opt]
-}
-
-func hasIndex(size int, i int) bool {
+	size := len(mgr.arguments)
 	if size == 0 {
 		return false
 	}
@@ -59,4 +48,12 @@ func hasIndex(size int, i int) bool {
 	}
 
 	return false
+}
+
+func (mgr *FlagMgr) argument(i int) *Flag {
+	return mgr.arguments[i]
+}
+
+func (mgr *FlagMgr) option(opt string) *Flag {
+	return mgr.options[opt]
 }

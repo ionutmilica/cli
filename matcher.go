@@ -117,11 +117,11 @@ func (m *matcher) matchLongOption(arg string) error {
 	}
 
 	if value == "" {
-		if option.isValueRequired() {
+		if option.isRequired() {
 			return errors.New(fmt.Sprintf("The `--%s` option requres a value!", arg))
 		}
 
-		if !option.isValueArray() && option.isValueOptional() {
+		if !option.isArray() && option.isOptional() {
 			value = option.value
 		}
 	}
@@ -136,7 +136,7 @@ func (m *matcher) matchArgument(arg string) error {
 
 	if m.mgr.hasArgument(current) {
 		m.ctx.Arguments[m.mgr.argument(current).name] = []string{arg}
-	} else if m.mgr.hasArgument(current-1) && m.mgr.argument(current-1).isArrayArgument() {
+	} else if m.mgr.hasArgument(current-1) && m.mgr.argument(current-1).isArray() {
 		m.ctx.Arguments[m.mgr.argument(current-1).name] = append(m.ctx.Arguments[m.mgr.argument(current-1).name], arg)
 	} else {
 		return errors.New("To many arguments!")
