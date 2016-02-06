@@ -20,6 +20,7 @@ func New() *App {
 	return app
 }
 
+// Register a new command into the system
 func (app *App) AddCommand(cmdFunc func(*App) *Command) *App {
 	c := cmdFunc(app)
 	app.Commands[strings.ToLower(c.Name)] = c

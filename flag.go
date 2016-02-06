@@ -13,10 +13,10 @@ const (
 	required = 4
 
 	// Flags for options
-	valueNone     = 6
-	valueRequired = 8
-	valueOptional = 10
-	valueArray    = 12
+	valueNone     = 8
+	valueRequired = 16
+	valueOptional = 32
+	valueArray    = 64
 )
 
 type Flag struct {

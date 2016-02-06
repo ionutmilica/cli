@@ -157,6 +157,30 @@ func TestParseArgumentArray(t *testing.T) {
 	argumentTest(t, flagMgr, steps, ctx)
 }
 
+func TestParseArgumentWithMissingArguments(t *testing.T) {
+	flags := []*Flag{
+		&Flag{
+			name:    "foo",
+			kind:    argumentFlag,
+			options: required,
+		},
+		&Flag{
+			name:    "bar",
+			kind:    argumentFlag,
+			options: required,
+		},
+	}
+	flagMgr := newFlagMgr(flags)
+
+	ctx := makeCtx()
+	ctx.cursor = 0
+	err := ctx.parse([]string{}, flagMgr)
+
+	if err == nil || err.Error() != "Not enough arguments (missing: `foo`)." {
+		t.Errorf("Parse with 1 missing argument failed with wrong error: %s", err)
+	}
+}
+
 func TestParseLongOption(t *testing.T) {
 	flags := []*Flag{
 		&Flag{
@@ -198,6 +222,33 @@ func TestParseLongOption(t *testing.T) {
 			name:       "output",
 			input:      "--output=file.out",
 			values:     []string{"file.out"},
+			shouldFail: false,
+		},
+	}
+
+	longOptionTest(t, flagMgr, steps, ctx)
+}
+
+func TestParseLongOptionWithDefaultValue(t *testing.T) {
+	flags := []*Flag{
+		&Flag{
+			name:    "file",
+			kind:    longOptionFlag,
+			options: valueOptional,
+			value:   "default",
+		},
+	}
+	flagMgr := newFlagMgr(flags)
+
+	ctx := makeCtx()
+	ctx.cursor = 0
+	ctx.args = []string{"--file"}
+
+	steps := []ArgumentParseTest{
+		ArgumentParseTest{
+			name:       "file",
+			input:      "--file",
+			values:     []string{"default"},
 			shouldFail: false,
 		},
 	}

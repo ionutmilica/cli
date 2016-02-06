@@ -14,6 +14,7 @@ type Context struct {
 	cursor int
 }
 
+// Parse and match os arguments against the registered flags
 func (ctx *Context) parse(args []string, mgr *FlagMgr) error {
 	ctx.args = args
 	ctx.cursor = 0
@@ -94,6 +95,7 @@ func (ctx *Context) parseLongOption(mgr *FlagMgr, arg string) error {
 	return nil
 }
 
+// Parse strings that are not starting with - as arguments and group them according to the signature
 func (ctx *Context) parseArgument(mgr *FlagMgr, arg string) error {
 	current := len(ctx.Arguments)
 
