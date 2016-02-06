@@ -16,7 +16,6 @@ func New() *App {
 		Commands: make(map[string]*Command, 0),
 	}
 	app.AddCommand(homeCommand)
-
 	return app
 }
 
@@ -40,26 +39,20 @@ func (app *App) Run(osArgs []string) {
 
 	if cmd, ok := app.Commands[cmd]; ok {
 		cmd.parse()
-		ctx := app.createContext(args)
 
-		if err := ctx.parse(args, newFlagMgr(cmd.Flags)); err != nil {
-			fmt.Println(err)
+		matcher := newMatcher(args, cmd.Flags)
+
+		if err := matcher.match(); err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 
-		cmd.Action(ctx)
+		cmd.Action(matcher.ctx)
+
 		return
 	}
 
 	fmt.Printf("Command `%s` was not found!", cmd)
-}
-
-func (app *App) createContext(args []string) *Context {
-	ctx := &Context{
-		Arguments: make(map[string][]string, 0),
-		Options:   make(map[string][]string),
-	}
-	return ctx
 }
 
 func homeCommand(app *App) *Command {
