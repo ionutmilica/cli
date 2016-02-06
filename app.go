@@ -32,27 +32,32 @@ func (app *App) Run(osArgs []string) {
 	var cmd string
 	var args []string
 
-	if len(args) > 1 {
+	if len(osArgs) > 1 {
 		cmd = osArgs[1]
 		args = osArgs[2:]
 	}
 
 	if cmd, ok := app.Commands[cmd]; ok {
 		cmd.parse()
-		cmd.Action(app.createContext(args, cmd.Flags))
+		ctx := app.createContext(args)
+
+		if err := ctx.parse(args, newFlagMgr(cmd.Flags)); err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		cmd.Action(ctx)
 		return
 	}
 
 	fmt.Printf("Command `%s` was not found!", cmd)
 }
 
-func (app *App) createContext(args []string, flags []*Flag) *Context {
+func (app *App) createContext(args []string) *Context {
 	ctx := &Context{
 		Arguments: make(map[string][]string, 0),
 		Options:   make(map[string][]string),
 	}
-	ctx.parse(args, newFlagMgr(flags))
-
 	return ctx
 }
 
