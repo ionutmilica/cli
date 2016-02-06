@@ -255,3 +255,60 @@ func TestParseLongOptionWithDefaultValue(t *testing.T) {
 
 	longOptionTest(t, flagMgr, steps, ctx)
 }
+
+func TestParseOptionWithMissingValue(t *testing.T) {
+	flags := []*Flag{
+		&Flag{
+			name:    "foo",
+			kind:    longOptionFlag,
+			options: valueRequired,
+		},
+	}
+	flagMgr := newFlagMgr(flags)
+
+	ctx := makeCtx()
+	ctx.cursor = 0
+	err := ctx.parse([]string{"--foo"}, flagMgr)
+
+	if err == nil || err.Error() != "The `--foo` option requres a value!" {
+		t.Errorf("Parse with missing option value failed with wrong error: %s", err)
+	}
+}
+
+func TestParseOptionInvalidOptionProvided(t *testing.T) {
+	flags := []*Flag{
+		&Flag{
+			name:    "foo",
+			kind:    longOptionFlag,
+			options: valueOptional,
+		},
+	}
+	flagMgr := newFlagMgr(flags)
+
+	ctx := makeCtx()
+	ctx.cursor = 0
+	err := ctx.parse([]string{"--boo"}, flagMgr)
+
+	if err == nil || err.Error() != "The `--boo` option does not exist." {
+		t.Errorf("Parse with invalid option failed with wrong error: %s", err)
+	}
+}
+
+func TestParseOptionWithNoWantedValue(t *testing.T) {
+	flags := []*Flag{
+		&Flag{
+			name:    "foo",
+			kind:    longOptionFlag,
+			options: valueNone,
+		},
+	}
+	flagMgr := newFlagMgr(flags)
+
+	ctx := makeCtx()
+	ctx.cursor = 0
+	err := ctx.parse([]string{"--foo=\"bar\""}, flagMgr)
+
+	if err == nil || err.Error() != "The `--foo` option does not accept a value!" {
+		t.Errorf("Parse with invalid option failed with wrong error: %s", err)
+	}
+}
