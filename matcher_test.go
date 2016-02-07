@@ -55,6 +55,14 @@ func TestCurrentMethod(t *testing.T) {
 	}
 }
 
+func TestPeekMethod(t *testing.T) {
+	m := newMatcher(args("--ion"), flags("{--ion}"))
+
+	if _, err := m.peek(); err == nil {
+		t.Errorf("Peek should have failed!")
+	}
+}
+
 func TestNextMethod(t *testing.T) {
 	m := newMatcher(args("--ion"), flags("{--ion}"))
 
@@ -260,6 +268,26 @@ func TestMatchLongOption(t *testing.T) {
 			arguments: map[string][]string{},
 			options: map[string][]string{
 				"file": []string{},
+			},
+		},
+
+		Test{
+			flags:     flags("{--file=}"),
+			args:      args("--file=dada"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{"dada"},
+			},
+		},
+
+		Test{
+			flags:     flags("{--file=}"),
+			args:      args("--file", "dada"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{"dada"},
 			},
 		},
 
