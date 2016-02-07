@@ -127,3 +127,16 @@ func TestLongOptionWithOptionalArrayValue(t *testing.T) {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
 	}
 }
+
+func TestLongOptionWithRequiredArrayValue(t *testing.T) {
+	flags := toFlags("{--test=+}")
+
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+
+	if !flags[0].isLongOption() || !flags[0].isRequired() || !flags[0].isArray() {
+		t.Errorf("Argument `test` should be longOptionFlag and have required value but got: %d, %d", flags[0].kind, flags[0].options)
+	}
+}

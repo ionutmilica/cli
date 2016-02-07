@@ -281,6 +281,15 @@ func TestMatchLongOption(t *testing.T) {
 			options:   map[string][]string{},
 		},
 
+		// Option requires a value
+		Test{
+			flags:     flags("{--file=+}"),
+			args:      args("--file"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
 		// Option default value
 		/*
 			@todo: Implement this in signature parser
