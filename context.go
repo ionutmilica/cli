@@ -15,6 +15,9 @@ func newContext() *Context {
 
 // Set argument with values
 func (ctx *Context) SetArgument(key string, values ...string) {
+	if len(values) == 0 {
+		values = []string{}
+	}
 	ctx.Arguments[key] = values
 }
 
@@ -25,7 +28,10 @@ func (ctx *Context) AppendToArgument(key string, value string) {
 
 // Set option with values
 func (ctx *Context) SetOption(key string, values ...string) {
-	ctx.Options[key] = values
+	if len(values) == 0 {
+		values = []string{}
+	}
+	ctx.Options[key] = []string(values)
 }
 
 // Check if context has a specific option

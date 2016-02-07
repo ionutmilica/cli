@@ -65,6 +65,8 @@ func (cmd *Command) parseOption(opt string) *Flag {
 		options = valueOptional | valueArray
 		opt = strings.TrimSuffix(opt, "=*")
 		break
+	default:
+		options = valueNone
 	}
 
 	flag := &Flag{

@@ -51,8 +51,9 @@ func (m *matcher) current() string {
 	return m.args[m.cursor]
 }
 
+// Look ahead and get the next element without moving the curosr
 func (m *matcher) peek() (string, error) {
-	if !m.hasNext() {
+	if m.cursor+1 >= len(m.args) {
 		return "", errors.New("Cannot peek if we don't have any more items!")
 	}
 	return m.args[m.cursor+1], nil
@@ -137,7 +138,12 @@ func (m *matcher) matchLongOption(arg string) error {
 			value = option.value
 		}
 	}
-	m.ctx.SetOption(arg, value)
+
+	if value != "" {
+		m.ctx.SetOption(arg, value)
+	} else {
+		m.ctx.SetOption(arg)
+	}
 
 	return nil
 }

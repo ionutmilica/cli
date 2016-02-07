@@ -118,15 +118,15 @@ func test(t *testing.T, tests []Test) {
 		err := m.match()
 
 		if test.fail && err == nil {
-			t.Errorf("Test %d expected to fail but no error got!", i)
+			t.Errorf("Test %d expected to fail but no error got!", i+1)
 		}
 
 		if !reflect.DeepEqual(test.arguments, m.ctx.Arguments) {
-			t.Errorf("Failed on test %d, got arguments: %s but expected: %s!", i, m.ctx.Arguments, test.arguments)
+			t.Errorf("Failed on test %d, got arguments: %s but expected: %s!", i+1, m.ctx.Arguments, test.arguments)
 		}
 
 		if !reflect.DeepEqual(test.options, m.ctx.Options) {
-			t.Errorf("Failed on test %d, got options: %s but expected: %s!", i, m.ctx.Options, test.options)
+			t.Errorf("Failed on test %d, got options: %s but expected: %s!", i+1, m.ctx.Options, test.options)
 		}
 
 	}
@@ -216,6 +216,84 @@ func TestMatchArgument(t *testing.T) {
 			},
 			options: map[string][]string{},
 		},
+	}
+
+	test(t, tests)
+}
+func TestMatchLongOption(t *testing.T) {
+	tests := []Test{
+		// No match
+		Test{
+			flags:     flags("{--file}"),
+			args:      args("file"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+		// Match
+		Test{
+			flags:     flags("{--file}"),
+			args:      args("--file"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{},
+			},
+		},
+
+		// Match only the flag
+		Test{
+			flags:     flags("{--file}"),
+			args:      args("--file", "youpi"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{},
+			},
+		},
+
+		// Match optional value option
+		Test{
+			flags:     flags("{--file=}"),
+			args:      args("--file"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{},
+			},
+		},
+
+		// Option does not exist
+		Test{
+			flags:     flags(""),
+			args:      args("--file"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Option does not accept a value
+		Test{
+			flags:     flags("{--file}"),
+			args:      args("--file=ion.so"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Option default value
+		/*
+			@todo: Implement this in signature parser
+			Test{
+				flags:     flags("{--file=ion}"),
+				args:      args("--file"),
+				fail:      false,
+				arguments: map[string][]string{},
+				options: map[string][]string{
+					"file": []string{"ion"},
+				},
+			},*/
+
 	}
 
 	test(t, tests)
