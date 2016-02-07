@@ -1,6 +1,9 @@
 package cli
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 // Helpers
 
@@ -86,4 +89,134 @@ func TestValidateMethod(t *testing.T) {
 	if err != nil {
 		t.Errorf("Received error despite there should be none! (%s", err.Error())
 	}
+}
+
+func TestToManyArguments(t *testing.T) {
+	m := newMatcher(args("file1", "file2"), flags("{file2}"))
+	err := m.match()
+
+	if err == nil || err.Error() != "To many arguments!" {
+		msg := "nil"
+		if err != nil {
+			msg = err.Error()
+		}
+		t.Errorf("Expected to many arguments error but got `%s`!", msg)
+	}
+}
+
+type Test struct {
+	args      []string
+	flags     []*Flag
+	fail      bool
+	arguments map[string][]string
+	options   map[string][]string
+}
+
+func test(t *testing.T, tests []Test) {
+	for i, test := range tests {
+		m := newMatcher(test.args, test.flags)
+		err := m.match()
+
+		if test.fail && err == nil {
+			t.Errorf("Test %d expected to fail but no error got!", i)
+		}
+
+		if !reflect.DeepEqual(test.arguments, m.ctx.Arguments) {
+			t.Errorf("Failed on test %d, got arguments: %s but expected: %s!", i, m.ctx.Arguments, test.arguments)
+		}
+
+		if !reflect.DeepEqual(test.options, m.ctx.Options) {
+			t.Errorf("Failed on test %d, got options: %s but expected: %s!", i, m.ctx.Options, test.options)
+		}
+
+	}
+}
+
+func TestMatchArgument(t *testing.T) {
+	tests := []Test{
+		// One argument
+		Test{
+			flags: flags("{file}"),
+			args:  args("file"),
+			fail:  false,
+			arguments: map[string][]string{
+				"file": []string{"file"},
+			},
+			options: map[string][]string{},
+		},
+		// Two arguments
+		Test{
+			flags: flags("{a} {b}"),
+			args:  args("ion", "maria"),
+			fail:  false,
+			arguments: map[string][]string{
+				"a": []string{"ion"},
+				"b": []string{"maria"},
+			},
+			options: map[string][]string{},
+		},
+
+		// Optional argument
+		Test{
+			flags: flags("{a?}"),
+			args:  args("test"),
+			fail:  false,
+			arguments: map[string][]string{
+				"a": []string{"test"},
+			},
+			options: map[string][]string{},
+		},
+
+		// Optional argument with 0 provided
+		Test{
+			flags:     flags("{a?}"),
+			args:      args(),
+			fail:      false,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Array argument
+		Test{
+			flags: flags("{a*}"),
+			args:  args("ion", "maria"),
+			fail:  false,
+			arguments: map[string][]string{
+				"a": []string{"ion", "maria"},
+			},
+			options: map[string][]string{},
+		},
+
+		// Array argument with 0 received - Fail
+		Test{
+			flags:     flags("{a*}"),
+			args:      args(),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Optional Array argument with 0 received
+
+		Test{
+			flags:     flags("{a?*}"),
+			args:      args(),
+			fail:      false,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Optional Array argument
+		Test{
+			flags: flags("{a?*}"),
+			args:  args("a", "b", "c", "d"),
+			fail:  false,
+			arguments: map[string][]string{
+				"a": []string{"a", "b", "c", "d"},
+			},
+			options: map[string][]string{},
+		},
+	}
+
+	test(t, tests)
 }

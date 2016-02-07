@@ -58,6 +58,7 @@ func (m *matcher) peek() (string, error) {
 	return m.args[m.cursor+1], nil
 }
 
+// start the matching process
 func (m *matcher) match() error {
 	m.cursor = 0
 
@@ -129,7 +130,7 @@ func (m *matcher) matchLongOption(arg string) error {
 
 	if value == "" {
 		if option.isRequired() {
-			return errors.New(fmt.Sprintf("The `--%s` option requres a value!", arg))
+			return errors.New(fmt.Sprintf("The `--%s` option requires a value!", arg))
 		}
 
 		if !option.isArray() && option.isOptional() {
