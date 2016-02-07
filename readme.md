@@ -1,12 +1,13 @@
 Cli
 =========
 
+[![GoDoc](https://godoc.org/github.com/codegangsta/cli?status.svg)](https://godoc.org/github.com/ionutmilica/cli)
 [![Build Status](https://travis-ci.org/ionutmilica/cli.svg)](https://travis-ci.org/ionutmilica/cli)
 [![Coverage Status](https://coveralls.io/repos/ionutmilica/cli/badge.svg?branch=master&service=github)](https://coveralls.io/github/ionutmilica/cli?branch=master)
 
-This library is made for those who want simplicity when dealing with cli applications.
-I'm making this because I have a need for it on my GO web framework, VUA but also for learning purposes.
-
+I wanted to make a simple cli app for Vua framework, but I've wanted something simple like the Console from
+Laravel so I've made this library.
+It provides very simple, but powerful syntax for creating commands for your CLI application.
 
 Example:
 ```go
@@ -27,7 +28,7 @@ func main() {
 func BuildCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
 		Name:        "Build",
-		Signature:   "{a} {b} {c} {--ion=}",
+		Signature:   "{input} {output=out.bin} {--verbose}",
 		Description: "Build this project",
 		Action: func(ctx *cli.Context) {
 			println("Build command!")
@@ -38,7 +39,7 @@ func BuildCommand(app *cli.App) *cli.Command {
 func ClearCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
 		Name:        "Clear",
-		Signature:   "clear",
+		Signature:   "",
 		Description: "Clears something from the project",
 		Action: func(ctx *cli.Context) {
 			println("Clear command!")
@@ -49,6 +50,20 @@ func ClearCommand(app *cli.App) *cli.Command {
 
 This project is under development so it's not production ready.
 
+Todo List
+----
+- [x] Required argument/ value for long option, i.e {file}
+- [x] Optional argument / value for long option, i.e {file?}
+- [x] Array argument, i.e {files=*}
+- [x] Description for argument, i.e {file : This argument accept a string}
+- [ ] Options, i.e {-q}
+- [ ] Array value for option
+- [ ] Argument default value , i.e {user=johnny}
+- [ ] Long Option default value, i.e {--queue=redis}
+- [ ] Option alias, i.e {-q|queue}
+- [ ] Subcommands
+- [ ] Console helpers: confirm, input, table, secret, ask, text color
+- [ ] Autocomplete
 
 License
 ----
