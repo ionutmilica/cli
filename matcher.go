@@ -36,6 +36,9 @@ func (m *matcher) hasNext() bool {
 
 // Go to the next arg
 func (m *matcher) next(steps ...int) {
+	if !m.hasNext() {
+		return
+	}
 	if len(steps) > 0 {
 		m.cursor += steps[0]
 	} else {
@@ -43,15 +46,23 @@ func (m *matcher) next(steps ...int) {
 	}
 }
 
-func (m *matcher) peek() string {
-	return m.args[m.cursor+1]
+// Get the current item
+func (m *matcher) current() string {
+	return m.args[m.cursor]
+}
+
+func (m *matcher) peek() (string, error) {
+	if !m.hasNext() {
+		return "", errors.New("Cannot peek if we don't have any more items!")
+	}
+	return m.args[m.cursor+1], nil
 }
 
 func (m *matcher) match() error {
 	m.cursor = 0
 
 	for m.hasNext() {
-		arg := m.args[m.cursor]
+		arg := m.current()
 		switch {
 		case strings.HasPrefix(arg, "--"): // We matched and long option
 			if err := m.matchLongOption(arg); err != nil {
@@ -109,8 +120,8 @@ func (m *matcher) matchLongOption(arg string) error {
 	}
 
 	if value == "" && option.acceptValue() && m.hasNext() {
-		peek := m.peek()
-		if len(peek) > 0 && peek[0] != '-' {
+		peek, err := m.peek()
+		if err == nil && len(peek) > 0 && peek[0] != '-' {
 			value = peek
 			m.next()
 		}

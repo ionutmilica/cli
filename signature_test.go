@@ -27,7 +27,7 @@ func TestPatternParseArgumentFlag(t *testing.T) {
 	}
 
 	for i, name := range expectedFlags {
-		if flags[i].kind != argumentFlag || flags[i].name != name {
+		if !flags[i].isArgument() || flags[i].name != name {
 			t.Errorf("Expected Name: `%s`, Kind: `%d`, but got: Name: `%s`, Kind: `%d`", name, argumentFlag, flags[i].name, flags[i].kind)
 		}
 	}
@@ -41,7 +41,7 @@ func TestPatternParseArgumentWithDescription(t *testing.T) {
 		return
 	}
 
-	if flags[0].kind != argumentFlag {
+	if !flags[0].isArgument() {
 		t.Errorf("Argument kind it's not `Argument` but got: %d", flags[0].kind)
 	}
 
@@ -58,7 +58,7 @@ func TestPatternWithOptionalArgument(t *testing.T) {
 		return
 	}
 
-	if flags[0].options != optional {
+	if !flags[0].isOptional() {
 		t.Errorf("Argument `user` should have optional option but got: %d", flags[0].options)
 	}
 }
@@ -97,7 +97,7 @@ func TestLongOptionParse(t *testing.T) {
 		return
 	}
 
-	if flags[0].kind != longOptionFlag {
+	if !flags[0].isLongOption() {
 		t.Errorf("Argument `test` should be longOptionFlag but got: %d", flags[0].kind)
 	}
 }
@@ -110,7 +110,7 @@ func TestLongOptionWithOptionalValue(t *testing.T) {
 		return
 	}
 
-	if flags[0].kind != longOptionFlag || !flags[0].isOptional() {
+	if !flags[0].isLongOption() || !flags[0].isOptional() {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
 	}
 }
@@ -123,7 +123,7 @@ func TestLongOptionWithOptionalArrayValue(t *testing.T) {
 		return
 	}
 
-	if flags[0].kind != longOptionFlag || !flags[0].isOptional() || !flags[0].isArray() {
+	if !flags[0].isLongOption() || !flags[0].isOptional() || !flags[0].isArray() {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
 	}
 }
