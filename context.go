@@ -9,13 +9,18 @@ type Context struct {
 func newContext() *Context {
 	return &Context{
 		Arguments: make(map[string][]string, 0),
-		Options:   make(map[string][]string),
+		Options:   make(map[string][]string, 0),
 	}
 }
 
 // Set argument with values
 func (ctx *Context) SetArgument(key string, values ...string) {
 	ctx.Arguments[key] = values
+}
+
+// Append values to the argument
+func (ctx *Context) AppendToArgument(key string, value string) {
+	ctx.Arguments[key] = append(ctx.Arguments[key], value)
 }
 
 // Set option with values

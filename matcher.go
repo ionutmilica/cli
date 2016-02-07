@@ -136,7 +136,7 @@ func (m *matcher) matchLongOption(arg string) error {
 			value = option.value
 		}
 	}
-	m.ctx.Options[arg] = []string{value}
+	m.ctx.SetOption(arg, value)
 
 	return nil
 }
@@ -146,9 +146,9 @@ func (m *matcher) matchArgument(arg string) error {
 	current := len(m.ctx.Arguments)
 
 	if m.mgr.hasArgument(current) {
-		m.ctx.Arguments[m.mgr.argument(current).name] = []string{arg}
+		m.ctx.SetArgument(m.mgr.argument(current).name, arg)
 	} else if m.mgr.hasArgument(current-1) && m.mgr.argument(current-1).isArray() {
-		m.ctx.Arguments[m.mgr.argument(current-1).name] = append(m.ctx.Arguments[m.mgr.argument(current-1).name], arg)
+		m.ctx.AppendToArgument(m.mgr.argument(current-1).name, arg)
 	} else {
 		return errors.New("To many arguments!")
 	}
