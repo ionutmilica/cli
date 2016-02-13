@@ -51,11 +51,7 @@ func (cmd *Command) parseOption(opt string) *Flag {
 		opt = opt[1:]
 	}
 
-	if strings.Contains(opt, " : ") {
-		parts := strings.Split(opt, " : ")
-		opt = parts[0]
-		description = parts[1]
-	}
+	opt, description = extractDescription(opt)
 
 	switch {
 	case strings.HasSuffix(opt, "="):
@@ -98,11 +94,7 @@ func (cmd *Command) parseArgument(arg string) *Flag {
 	var description string
 	var options int8
 
-	if strings.Contains(arg, " : ") {
-		parts := strings.Split(arg, " : ")
-		arg = parts[0]
-		description = parts[1]
-	}
+	arg, description = extractDescription(arg)
 
 	switch {
 	case strings.HasSuffix(arg, "?*"):
@@ -137,4 +129,14 @@ func (cmd *Command) parseArgument(arg string) *Flag {
 	cmd.Flags = append(cmd.Flags, flag)
 
 	return flag
+}
+
+// Extract the name and the description from {something : Description} syntax
+func extractDescription(n string) (string, string) {
+	if strings.Contains(n, " : ") {
+		parts := strings.Split(n, " : ")
+		return parts[0], parts[1]
+	}
+
+	return n, ""
 }

@@ -166,3 +166,11 @@ func TestLongOptionWithDefaultValue(t *testing.T) {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value with default=ionut but got: %d, %d, val=%s", flags[0].kind, flags[0].options, flags[0].value)
 	}
 }
+
+func TestExtractDescriptionFunction(t *testing.T) {
+	name, description := extractDescription("ion : Hello world!")
+
+	if name != "ion" || description != "Hello world!" {
+		t.Errorf("Expected [%s, %s] but got [%s, %s]", "ion", "Hello world!", name, description)
+	}
+}
