@@ -13,6 +13,11 @@ func newContext() *Context {
 	}
 }
 
+func (ctx *Context) reset() {
+	ctx.Arguments = map[string][]string{}
+	ctx.Options = map[string][]string{}
+}
+
 // Set argument with values
 func (ctx *Context) SetArgument(key string, values ...string) {
 	if len(values) == 0 {

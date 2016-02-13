@@ -159,6 +159,7 @@ func (m *matcher) matchLongOption(arg string) error {
 			return nil
 		}
 		if !option.isArray() {
+			m.ctx.reset()
 			return errors.New(fmt.Sprintf("The `--%s` option does not accept an array of values!", arg))
 		}
 		m.ctx.AppendToOption(arg, value)

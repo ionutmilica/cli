@@ -129,10 +129,6 @@ func test(t *testing.T, tests []Test) {
 			t.Errorf("Test %d expected to fail but no error got!", i+1)
 		}
 
-		if err == nil {
-			return
-		}
-
 		if !reflect.DeepEqual(test.arguments, m.ctx.Arguments) {
 			t.Errorf("Failed on test %d, got arguments: %s but expected: %s!", i+1, m.ctx.Arguments, test.arguments)
 		}
@@ -336,7 +332,7 @@ func TestMatchLongOption(t *testing.T) {
 		Test{
 			flags:     flags("{--file=+}"),
 			args:      args("--file=22", "--file", "something"),
-			fail:      true,
+			fail:      false,
 			arguments: map[string][]string{},
 			options: map[string][]string{
 				"file": []string{"22", "something"},
