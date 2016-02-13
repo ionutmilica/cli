@@ -59,7 +59,7 @@ Todo List
 - [x] Array argument, i.e {files=*}
 - [x] Description for argument, i.e {file : This argument accept a string}
 - [ ] Options, i.e {-q}
-- [ ] Array value for option
+- [x] Array value for option
 - [x] Argument default value , i.e {user=johnny}
 - [x] Long Option default value, i.e {--queue=redis}
 - [ ] Option alias, i.e {-q|queue}

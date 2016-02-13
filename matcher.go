@@ -154,7 +154,14 @@ func (m *matcher) matchLongOption(arg string) error {
 	}
 
 	if value != "" {
-		m.ctx.SetOption(arg, value)
+		if !m.ctx.HasOption(arg) {
+			m.ctx.SetOption(arg, value)
+			return nil
+		}
+		if !option.isArray() {
+			return errors.New(fmt.Sprintf("The `--%s` option does not accept an array of values!", arg))
+		}
+		m.ctx.AppendToOption(arg, value)
 	} else {
 		m.ctx.SetOption(arg)
 	}

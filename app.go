@@ -46,9 +46,7 @@ func (app *App) Run(osArgs []string) {
 			fmt.Println(err.Error())
 			return
 		}
-
 		cmd.Action(matcher.ctx)
-
 		return
 	}
 

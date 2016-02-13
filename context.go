@@ -26,6 +26,11 @@ func (ctx *Context) AppendToArgument(key string, value string) {
 	ctx.Arguments[key] = append(ctx.Arguments[key], value)
 }
 
+// Append value to the option
+func (ctx *Context) AppendToOption(key string, value string) {
+	ctx.Options[key] = append(ctx.Options[key], value)
+}
+
 // Set option with values
 func (ctx *Context) SetOption(key string, values ...string) {
 	if len(values) == 0 {
