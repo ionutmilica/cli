@@ -1,7 +1,6 @@
 package cli
 
 import (
-	_ "fmt"
 	"regexp"
 	"strings"
 )
@@ -25,7 +24,7 @@ func (cmd *Command) parse() {
 			f = cmd.parseOption(flag)
 		} else {
 			if hadArrayArg {
-				panic("Command cannot have argument after an array argument!")
+				panic("After an array argument, command cannot have any other arguments!")
 			}
 
 			f = cmd.parseArgument(flag)
@@ -37,8 +36,10 @@ func (cmd *Command) parse() {
 	}
 }
 
+// Parses syntax like {--queue}, {-q} for options
 func (cmd *Command) parseOption(opt string) *Flag {
 	var description string
+	var implicitValue string
 	var kind int8
 	var options int8
 
@@ -69,6 +70,12 @@ func (cmd *Command) parseOption(opt string) *Flag {
 		options = valueRequired | valueArray
 		opt = strings.TrimSuffix(opt, "=+")
 		break
+	case strings.Contains(opt, "="):
+		parts := strings.Split(opt, "=")
+		implicitValue = strings.Join(parts[1:], "=")
+		opt = parts[0]
+		options = valueOptional
+		break
 	default:
 		options = valueNone
 	}
@@ -78,13 +85,16 @@ func (cmd *Command) parseOption(opt string) *Flag {
 		name:        opt,
 		description: description,
 		options:     options,
+		value:       implicitValue,
 	}
 	cmd.Flags = append(cmd.Flags, flag)
 
 	return flag
 }
 
+// Parses {argument} like syntax
 func (cmd *Command) parseArgument(arg string) *Flag {
+	var implicitValue string
 	var description string
 	var options int8
 
@@ -107,6 +117,12 @@ func (cmd *Command) parseArgument(arg string) *Flag {
 		options = optional
 		arg = strings.TrimSuffix(arg, "?")
 		break
+	case strings.Contains(arg, "="):
+		parts := strings.Split(arg, "=")
+		implicitValue = strings.Join(parts[1:], "=")
+		arg = parts[0]
+		options = optional
+		break
 	default:
 		options = required
 	}
@@ -116,6 +132,7 @@ func (cmd *Command) parseArgument(arg string) *Flag {
 		kind:        argumentFlag,
 		options:     options,
 		description: description,
+		value:       implicitValue,
 	}
 	cmd.Flags = append(cmd.Flags, flag)
 

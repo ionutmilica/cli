@@ -224,6 +224,17 @@ func TestMatchArgument(t *testing.T) {
 			},
 			options: map[string][]string{},
 		},
+
+		// Option default value
+		Test{
+			flags: flags("{a==test}"),
+			args:  args(),
+			fail:  false,
+			arguments: map[string][]string{
+				"a": []string{"=test"},
+			},
+			options: map[string][]string{},
+		},
 	}
 
 	test(t, tests)
@@ -319,18 +330,15 @@ func TestMatchLongOption(t *testing.T) {
 		},
 
 		// Option default value
-		/*
-			@todo: Implement this in signature parser
-			Test{
-				flags:     flags("{--file=ion}"),
-				args:      args("--file"),
-				fail:      false,
-				arguments: map[string][]string{},
-				options: map[string][]string{
-					"file": []string{"ion"},
-				},
-			},*/
-
+		Test{
+			flags:     flags("{--file=ion}"),
+			args:      args("--file"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{"ion"},
+			},
+		},
 	}
 
 	test(t, tests)

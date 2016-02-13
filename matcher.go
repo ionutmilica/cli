@@ -85,9 +85,23 @@ func (m *matcher) match() error {
 
 // Validate arguments so the matcher will return error if requiredArgs != foundArgs
 func (m *matcher) validate() error {
+
+	// Set arguments with default value
+	for _, flag := range m.mgr.arguments {
+		if _, ok := m.ctx.Arguments[flag.name]; !ok && flag.value != "" {
+			m.ctx.Arguments[flag.name] = []string{flag.value}
+		}
+	}
+
+	// Set flags with default value
+	for _, flag := range m.mgr.options {
+		if _, ok := m.ctx.Options[flag.name]; !ok && flag.value != "" {
+			m.ctx.Options[flag.name] = []string{flag.value}
+		}
+	}
 	requiredArgs := m.mgr.requiredArgs()
 
-	if len(requiredArgs) == len(m.ctx.Arguments) {
+	if len(requiredArgs) <= len(m.ctx.Arguments) {
 		return nil
 	}
 

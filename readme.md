@@ -14,6 +14,7 @@ Example:
 package main
 
 import (
+	"fmt"
 	"github.com/ionutmilica/cli"
 	"os"
 )
@@ -28,7 +29,7 @@ func main() {
 func BuildCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
 		Name:        "Build",
-		Signature:   "{input} {output=out.bin} {--verbose}",
+		Signature:   "{a} {b} {c} {--ion=}",
 		Description: "Build this project",
 		Action: func(ctx *cli.Context) {
 			println("Build command!")
@@ -39,9 +40,10 @@ func BuildCommand(app *cli.App) *cli.Command {
 func ClearCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
 		Name:        "Clear",
-		Signature:   "",
+		Signature:   "{what=.}",
 		Description: "Clears something from the project",
 		Action: func(ctx *cli.Context) {
+			fmt.Println(ctx)
 			println("Clear command!")
 		},
 	}
@@ -58,10 +60,11 @@ Todo List
 - [x] Description for argument, i.e {file : This argument accept a string}
 - [ ] Options, i.e {-q}
 - [ ] Array value for option
-- [ ] Argument default value , i.e {user=johnny}
-- [ ] Long Option default value, i.e {--queue=redis}
+- [x] Argument default value , i.e {user=johnny}
+- [x] Long Option default value, i.e {--queue=redis}
 - [ ] Option alias, i.e {-q|queue}
-- [ ] Subcommands
+- [ ] Sub-commands, i.e "db:migrate {dir=.}"
+- [ ] Global options that applies to every registered command
 - [ ] Console helpers: confirm, input, table, secret, ask, text color
 - [ ] Autocomplete
 

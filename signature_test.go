@@ -89,6 +89,19 @@ func TestPatternWithOptionalArrayArgument(t *testing.T) {
 	}
 }
 
+func TestDefaultValueArgument(t *testing.T) {
+	flags := toFlags("{user=ionut}")
+
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+
+	if !flags[0].isOptional() || flags[0].value != "ionut" {
+		t.Errorf("Argument `user` should be optional and have default value=ionut got: %d, val=%s", flags[0].options, flags[0].value)
+	}
+}
+
 func TestLongOptionParse(t *testing.T) {
 	flags := toFlags("{--test}")
 
@@ -138,5 +151,18 @@ func TestLongOptionWithRequiredArrayValue(t *testing.T) {
 
 	if !flags[0].isLongOption() || !flags[0].isRequired() || !flags[0].isArray() {
 		t.Errorf("Argument `test` should be longOptionFlag and have required value but got: %d, %d", flags[0].kind, flags[0].options)
+	}
+}
+
+func TestLongOptionWithDefaultValue(t *testing.T) {
+	flags := toFlags("{--test=ionut}")
+
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+
+	if !flags[0].isLongOption() || !flags[0].isOptional() || flags[0].value != "ionut" {
+		t.Errorf("Argument `test` should be longOptionFlag and have optional value with default=ionut but got: %d, %d, val=%s", flags[0].kind, flags[0].options, flags[0].value)
 	}
 }
