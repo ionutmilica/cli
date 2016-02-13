@@ -28,13 +28,14 @@ func (app *App) AddCommand(cmdFunc func(*App) *Command) *App {
 
 // Start the cli framework, based on the os arguments. Those arguments should
 // follow the pattern: arg1 file, arg2 argument/option and so on
-func (app *App) Run(osArgs []string) {
+func (app *App) Run(args []string) {
 	var cmd string
-	var args []string
 
-	if len(osArgs) > 1 {
-		cmd = osArgs[1]
-		args = osArgs[2:]
+	args = args[1:]
+	cmd, pos := findFirstArgument(args)
+
+	if pos != -1 {
+		args = append(args[:pos], args[pos+1:]...)
 	}
 
 	if cmd, ok := app.Commands[cmd]; ok {
@@ -53,6 +54,17 @@ func (app *App) Run(osArgs []string) {
 	fmt.Printf("Command `%s` was not found!", cmd)
 }
 
+// Find the first argument from the os args
+func findFirstArgument(args []string) (string, int) {
+	for i, arg := range args {
+		if len(arg) > 0 && arg[0] != '-' {
+			return arg, i
+		}
+	}
+	return "", -1
+}
+
+// Command for default app usage
 func homeCommand(app *App) *Command {
 	return &Command{
 		Name: "",
