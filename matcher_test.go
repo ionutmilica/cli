@@ -129,7 +129,7 @@ func test(t *testing.T, tests []Test) {
 			t.Errorf("Test %d expected to fail but no error got!", i+1)
 		}
 
-		if err != nil {
+		if err == nil {
 			return
 		}
 
