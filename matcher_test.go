@@ -113,6 +113,7 @@ func TestToManyArguments(t *testing.T) {
 }
 
 type Test struct {
+	name      string
 	args      []string
 	flags     []*Flag
 	fail      bool
@@ -126,15 +127,15 @@ func test(t *testing.T, tests []Test) {
 		err := m.match()
 
 		if test.fail && err == nil {
-			t.Errorf("Test %d expected to fail but no error got!", i+1)
+			t.Errorf("Test #%d(%s) expected to fail but no error got!", i+1, test.name)
 		}
 
 		if !reflect.DeepEqual(test.arguments, m.ctx.Arguments) {
-			t.Errorf("Failed on test %d, got arguments: %s but expected: %s!", i+1, m.ctx.Arguments, test.arguments)
+			t.Errorf("Failed on test #%d(%s), got arguments: %s but expected: %s!", i+1, test.name, m.ctx.Arguments, test.arguments)
 		}
 
 		if !reflect.DeepEqual(test.options, m.ctx.Options) {
-			t.Errorf("Failed on test %d, got options: %s but expected: %s!", i+1, m.ctx.Options, test.options)
+			t.Errorf("Failed on test #%d(%s), got options: %s but expected: %s!", i+1, test.name, m.ctx.Options, test.options)
 		}
 
 	}
@@ -144,6 +145,7 @@ func TestMatchArgument(t *testing.T) {
 	tests := []Test{
 		// One argument
 		Test{
+			name:  "Match one argument",
 			flags: flags("{file}"),
 			args:  args("file"),
 			fail:  false,
@@ -154,6 +156,7 @@ func TestMatchArgument(t *testing.T) {
 		},
 		// Two arguments
 		Test{
+			name:  "Match two arguments",
 			flags: flags("{a} {b}"),
 			args:  args("ion", "maria"),
 			fail:  false,
@@ -166,6 +169,7 @@ func TestMatchArgument(t *testing.T) {
 
 		// Optional argument
 		Test{
+			name:  "Match optional argument",
 			flags: flags("{a?}"),
 			args:  args("test"),
 			fail:  false,
@@ -177,6 +181,7 @@ func TestMatchArgument(t *testing.T) {
 
 		// Optional argument with 0 provided
 		Test{
+			name:      "Match optional argument with 0 provided",
 			flags:     flags("{a?}"),
 			args:      args(),
 			fail:      false,
@@ -186,6 +191,7 @@ func TestMatchArgument(t *testing.T) {
 
 		// Array argument
 		Test{
+			name:  "Match array argument",
 			flags: flags("{a*}"),
 			args:  args("ion", "maria"),
 			fail:  false,
@@ -197,6 +203,7 @@ func TestMatchArgument(t *testing.T) {
 
 		// Array argument with 0 received - Fail
 		Test{
+			name:      "Match argument with 0 provided",
 			flags:     flags("{a*}"),
 			args:      args(),
 			fail:      true,
@@ -207,6 +214,7 @@ func TestMatchArgument(t *testing.T) {
 		// Optional Array argument with 0 received
 
 		Test{
+			name:      "Match array argument with 0 provided",
 			flags:     flags("{a?*}"),
 			args:      args(),
 			fail:      false,
@@ -216,6 +224,7 @@ func TestMatchArgument(t *testing.T) {
 
 		// Optional Array argument
 		Test{
+			name:  "Match optional array argument",
 			flags: flags("{a?*}"),
 			args:  args("a", "b", "c", "d"),
 			fail:  false,
@@ -225,8 +234,9 @@ func TestMatchArgument(t *testing.T) {
 			options: map[string][]string{},
 		},
 
-		// Option default value
+		// Argument default value
 		Test{
+			name:  "Match argument with default value",
 			flags: flags("{a==test}"),
 			args:  args(),
 			fail:  false,
@@ -239,6 +249,164 @@ func TestMatchArgument(t *testing.T) {
 
 	test(t, tests)
 }
+
+func TestMatchOption(t *testing.T) {
+	tests := []Test{
+		// No match
+		Test{
+			name:      "Match option with 0 provided",
+			flags:     flags("{-f}"),
+			args:      args("file"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// One match
+		Test{
+			name:      "Match one option",
+			flags:     flags("{-f}"),
+			args:      args("-f"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{},
+			},
+		},
+
+		// Match only the flag
+		Test{
+			name:      "Match the option without the flag",
+			flags:     flags("{-f}"),
+			args:      args("-f", "youpi"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{},
+			},
+		},
+
+		// Match optional value option
+		Test{
+			name:      "Match optional value option",
+			flags:     flags("{-f=}"),
+			args:      args("-f"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{},
+			},
+		},
+
+		Test{
+			name:      "Match optional value option with value provided",
+			flags:     flags("{-f=}"),
+			args:      args("-f=dada"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{"dada"},
+			},
+		},
+
+		Test{
+			name:      "Match optional value option with value provided by arg",
+			flags:     flags("{-f=}"),
+			args:      args("-f", "dada"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{"dada"},
+			},
+		},
+
+		// Option does not exist
+		Test{
+			name:      "Option does not exist",
+			flags:     flags(""),
+			args:      args("-f"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Option does not accept a value
+		// Option does not accept a value
+		Test{
+			name:      "Options does not accept value",
+			flags:     flags("{-f}"),
+			args:      args("-f=ion.so"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		Test{
+			name:      "Options does not accept value",
+			flags:     flags("{-f}"),
+			args:      args("-f", "ion.so"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{},
+			},
+		},
+
+		// Option requires a value
+		Test{
+			name:      "Option requires value",
+			flags:     flags("{-f=+}"),
+			args:      args("-f"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+		Test{
+			flags:     flags("{-f=+}"),
+			args:      args("-f", "22", "-f", "something"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{"22", "something"},
+			},
+		},
+
+		// Option default value
+		Test{
+			name:      "Option default value",
+			flags:     flags("{-f=ion}"),
+			args:      args("--f"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{"ion"},
+			},
+		},
+
+		// Array of option values
+		Test{
+			name:      "Array of option values",
+			flags:     flags("{--f=*}"),
+			args:      args("-f", "ionut", "-f", "ion"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{"ionut", "ion"},
+			},
+		},
+
+		Test{
+			flags:     flags("{-f=}"),
+			args:      args("-f", "ionut", "-f", "ion"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+	}
+
+	test(t, tests)
+}
+
 func TestMatchLongOption(t *testing.T) {
 	tests := []Test{
 		// No match
@@ -318,6 +486,17 @@ func TestMatchLongOption(t *testing.T) {
 			fail:      true,
 			arguments: map[string][]string{},
 			options:   map[string][]string{},
+		},
+
+		// Option does not accept a value
+		Test{
+			flags:     flags("{-file}"),
+			args:      args("--file", "ion.so"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"file": []string{},
+			},
 		},
 
 		// Option requires a value

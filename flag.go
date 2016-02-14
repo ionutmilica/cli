@@ -52,12 +52,15 @@ func (f Flag) isOption() bool {
 
 // Check if option accepts a value
 func (f Flag) acceptValue() bool {
+	if f.options&valueNone == valueNone {
+		return false
+	}
 	return f.isOptional() || f.isRequired()
 }
 
 // Check if argument or option accepts more than one value
 func (f Flag) isArray() bool {
-	if f.kind == argumentFlag {
+	if f.isArgument() {
 		return f.options&isArray == isArray
 	}
 	return f.options&valueArray == valueArray
@@ -65,7 +68,7 @@ func (f Flag) isArray() bool {
 
 // Check if argument is optional or value for option is optional (as the option itself is always optional)
 func (f Flag) isOptional() bool {
-	if f.kind == argumentFlag {
+	if f.isArgument() {
 		return f.options&optional == optional
 	}
 	return f.options&valueOptional == valueOptional
@@ -73,7 +76,7 @@ func (f Flag) isOptional() bool {
 
 // Check if argument is required or value for option is required
 func (f Flag) isRequired() bool {
-	if f.kind == argumentFlag {
+	if f.isArgument() {
 		return f.options&required == required
 	}
 	return f.options&valueRequired == valueRequired

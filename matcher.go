@@ -66,8 +66,13 @@ func (m *matcher) match() error {
 	for m.hasNext() {
 		arg := m.current()
 		switch {
-		case strings.HasPrefix(arg, "--"): // We matched and long option
+		case strings.HasPrefix(arg, "--"): // We matched a long option
 			if err := m.matchLongOption(arg); err != nil {
+				return err
+			}
+			break
+		case strings.HasPrefix(arg, "-"): // We matched a option
+			if err := m.matchLongOption("-" + arg); err != nil {
 				return err
 			}
 			break
