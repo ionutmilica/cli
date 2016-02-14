@@ -45,6 +45,11 @@ func (f Flag) isLongOption() bool {
 	return f.kind == longOptionFlag
 }
 
+// Check if a given flag is an option
+func (f Flag) isOption() bool {
+	return f.kind == optionFlag
+}
+
 // Check if option accepts a value
 func (f Flag) acceptValue() bool {
 	return f.isOptional() || f.isRequired()

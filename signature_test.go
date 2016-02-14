@@ -16,6 +16,8 @@ func toFlags(signature string) []*Flag {
 	return cmd.Flags
 }
 
+/** Arguments **/
+
 func TestPatternParseArgumentFlag(t *testing.T) {
 	flags := toFlags("{user} {other}")
 
@@ -102,22 +104,33 @@ func TestDefaultValueArgument(t *testing.T) {
 	}
 }
 
-func TestLongOptionParse(t *testing.T) {
+/** LONG OPTIONS and Short options **/
+
+func TestOptionParse(t *testing.T) {
 	flags := toFlags("{--test}")
 
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
 		return
 	}
-
 	if !flags[0].isLongOption() {
 		t.Errorf("Argument `test` should be longOptionFlag but got: %d", flags[0].kind)
 	}
+
+	// Short option
+	flags = toFlags("{-t}")
+
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+	if !flags[0].isOption() {
+		t.Errorf("Argument `t` should be optionFlag but got: %d", flags[0].kind)
+	}
 }
 
-func TestLongOptionWithOptionalValue(t *testing.T) {
+func TestOptionWithOptionalValue(t *testing.T) {
 	flags := toFlags("{--test=}")
-
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
 		return
@@ -126,9 +139,19 @@ func TestLongOptionWithOptionalValue(t *testing.T) {
 	if !flags[0].isLongOption() || !flags[0].isOptional() {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
 	}
+
+	// Short option
+	flags = toFlags("{-t=}")
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+	if !flags[0].isOption() || !flags[0].isOptional() {
+		t.Errorf("Argument `t` should be optionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
+	}
 }
 
-func TestLongOptionWithOptionalArrayValue(t *testing.T) {
+func TestOptionWithOptionalArrayValue(t *testing.T) {
 	flags := toFlags("{--test=*}")
 
 	if len(flags) < 1 {
@@ -139,31 +162,57 @@ func TestLongOptionWithOptionalArrayValue(t *testing.T) {
 	if !flags[0].isLongOption() || !flags[0].isOptional() || !flags[0].isArray() {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
 	}
-}
 
-func TestLongOptionWithRequiredArrayValue(t *testing.T) {
-	flags := toFlags("{--test=+}")
-
+	// Short option
+	flags = toFlags("{-t=*}")
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
 		return
 	}
+	if !flags[0].isOption() || !flags[0].isOptional() || !flags[0].isArray() {
+		t.Errorf("Argument `t` should be optionFlag and have optional value but got: %d, %d", flags[0].kind, flags[0].options)
+	}
+}
 
+func TestOptionWithRequiredArrayValue(t *testing.T) {
+	flags := toFlags("{--test=+}")
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
 	if !flags[0].isLongOption() || !flags[0].isRequired() || !flags[0].isArray() {
 		t.Errorf("Argument `test` should be longOptionFlag and have required value but got: %d, %d", flags[0].kind, flags[0].options)
 	}
-}
 
-func TestLongOptionWithDefaultValue(t *testing.T) {
-	flags := toFlags("{--test=ionut}")
-
+	// Short option
+	flags = toFlags("{-t=+}")
 	if len(flags) < 1 {
 		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
 		return
 	}
+	if !flags[0].isOption() || !flags[0].isRequired() || !flags[0].isArray() {
+		t.Errorf("Argument `t` should be optionFlag and have required value but got: %d, %d", flags[0].kind, flags[0].options)
+	}
+}
 
+func TestOptionWithDefaultValue(t *testing.T) {
+	flags := toFlags("{--test=ionut}")
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
 	if !flags[0].isLongOption() || !flags[0].isOptional() || flags[0].value != "ionut" {
 		t.Errorf("Argument `test` should be longOptionFlag and have optional value with default=ionut but got: %d, %d, val=%s", flags[0].kind, flags[0].options, flags[0].value)
+	}
+
+	// Short option
+	flags = toFlags("{-t=ionut}")
+	if len(flags) < 1 {
+		t.Errorf("Expected 1 value flag but got `%d`!", len(flags))
+		return
+	}
+	if !flags[0].isOption() || !flags[0].isOptional() || flags[0].value != "ionut" {
+		t.Errorf("Argument `t` should be longOptionFlag and have optional value with default=ionut but got: %d, %d, val=%s", flags[0].kind, flags[0].options, flags[0].value)
 	}
 }
 
