@@ -323,6 +323,15 @@ func TestMatchOption(t *testing.T) {
 			options:   map[string][]string{},
 		},
 
+		Test{
+			name:      "Match multiple merged options with value (FAIL)",
+			flags:     flags("{-f} {-j} {-s}"),
+			args:      args("-fjs=da"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
 		// Match optional value option
 		Test{
 			name:      "Match optional value option",
@@ -411,6 +420,17 @@ func TestMatchOption(t *testing.T) {
 			name:      "Option default value",
 			flags:     flags("{-f=ion}"),
 			args:      args("--f"),
+			fail:      false,
+			arguments: map[string][]string{},
+			options: map[string][]string{
+				"f": []string{"ion"},
+			},
+		},
+
+		Test{
+			name:      "Option default value with no flags provided",
+			flags:     flags("{-f=ion}"),
+			args:      args(),
 			fail:      false,
 			arguments: map[string][]string{},
 			options: map[string][]string{
