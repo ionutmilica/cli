@@ -66,13 +66,8 @@ func (m *matcher) match() error {
 	for m.hasNext() {
 		arg := m.current()
 		switch {
-		case strings.HasPrefix(arg, "--"): // We matched a long option
-			if err := m.matchLongOption(arg); err != nil {
-				return err
-			}
-			break
-		case strings.HasPrefix(arg, "-"): // We matched a option
-			if err := m.matchLongOption("-" + arg); err != nil {
+		case strings.HasPrefix(arg, "-"): // We matched an option
+			if err := m.matchOption(arg); err != nil {
 				return err
 			}
 			break
@@ -116,13 +111,20 @@ func (m *matcher) validate() error {
 			missing = append(missing, arg)
 		}
 	}
-	return errors.New(fmt.Sprintf("Not enough arguments (missing: %s).", strings.Join(missing, ", ")))
+	return m.fail("Not enough arguments (missing: %s).", strings.Join(missing, ", "))
 }
 
 // Parses options like --opt, --opt=val --opt val according to the defined flags
-func (m *matcher) matchLongOption(arg string) error {
-	var value string
-	arg = arg[2:]
+func (m *matcher) matchOption(arg string) error {
+	value := ""
+	isShort := false
+
+	if strings.HasPrefix(arg, "--") {
+		arg = arg[2:]
+	} else {
+		arg = arg[1:]
+		isShort = true
+	}
 
 	if strings.Contains(arg, "=") {
 		parts := strings.Split(arg, "=")
@@ -130,14 +132,32 @@ func (m *matcher) matchLongOption(arg string) error {
 		value = parts[1]
 	}
 
+	if isShort {
+		if len(arg) > 1 {
+			// -abc=something is strange
+			if value != "" {
+				return m.fail("The `-%s` options cannot accept values!", arg)
+			}
+
+			// -abc should contains 3 options
+			for _, c := range strings.Split(arg, "") {
+				err := m.matchOption("-" + c)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}
+
 	if !m.mgr.hasOption(arg) {
-		return errors.New(fmt.Sprintf("The `--%s` option does not exist.", arg))
+		return m.fail("The `--%s` option does not exist.", arg)
 	}
 
 	option := m.mgr.option(arg)
 
 	if value != "" && !option.acceptValue() {
-		return errors.New(fmt.Sprintf("The `--%s` option does not accept a value!", arg))
+		return m.fail("The `--%s` option does not accept a value!", arg)
 	}
 
 	if value == "" && option.acceptValue() && m.hasNext() {
@@ -150,7 +170,7 @@ func (m *matcher) matchLongOption(arg string) error {
 
 	if value == "" {
 		if option.isRequired() {
-			return errors.New(fmt.Sprintf("The `--%s` option requires a value!", arg))
+			return m.fail("The `--%s` option requires a value!", arg)
 		}
 
 		if !option.isArray() && option.isOptional() {
@@ -164,8 +184,7 @@ func (m *matcher) matchLongOption(arg string) error {
 			return nil
 		}
 		if !option.isArray() {
-			m.ctx.reset()
-			return errors.New(fmt.Sprintf("The `--%s` option does not accept an array of values!", arg))
+			return m.fail("The `--%s` option does not accept an array of values!", arg)
 		}
 		m.ctx.AppendToOption(arg, value)
 	} else {
@@ -184,8 +203,14 @@ func (m *matcher) matchArgument(arg string) error {
 	} else if m.mgr.hasArgument(current-1) && m.mgr.argument(current-1).isArray() {
 		m.ctx.AppendToArgument(m.mgr.argument(current-1).name, arg)
 	} else {
-		return errors.New("To many arguments!")
+		return m.fail("To many arguments!")
 	}
 
 	return nil
+}
+
+// Clean the context and return the error
+func (m *matcher) fail(msg string, args ...interface{}) error {
+	m.ctx.reset()
+	return fmt.Errorf(msg, args...)
 }

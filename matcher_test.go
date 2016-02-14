@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -88,6 +89,7 @@ func TestValidateMethod(t *testing.T) {
 	err := m.match()
 
 	if err == nil || err.Error() != "Not enough arguments (missing: file2)." {
+		fmt.Println(err.Error())
 		t.Errorf("Received wrong error response for not enough provided args!")
 	}
 
@@ -276,14 +278,49 @@ func TestMatchOption(t *testing.T) {
 
 		// Match only the flag
 		Test{
-			name:      "Match the option without the flag",
+			name:      "Match the option without the flag (fail)",
 			flags:     flags("{-f}"),
 			args:      args("-f", "youpi"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		// Match only the flag
+		Test{
+			name:  "Match the option without the flag (safe)",
+			flags: flags("{-f} {arg}"),
+			args:  args("-f", "youpi"),
+			fail:  false,
+			arguments: map[string][]string{
+				"arg": []string{"youpi"},
+			},
+			options: map[string][]string{
+				"f": []string{},
+			},
+		},
+
+		// Match multiple merged options
+		Test{
+			name:      "Match multiple merged options",
+			flags:     flags("{-f} {-j} {-s}"),
+			args:      args("-fjs"),
 			fail:      false,
 			arguments: map[string][]string{},
 			options: map[string][]string{
 				"f": []string{},
+				"j": []string{},
+				"s": []string{},
 			},
+		},
+
+		Test{
+			name:      "Match multiple merged options with one wrong",
+			flags:     flags("{-f} {-j}"),
+			args:      args("-fjs"),
+			fail:      true,
+			arguments: map[string][]string{},
+			options:   map[string][]string{},
 		},
 
 		// Match optional value option
@@ -345,11 +382,9 @@ func TestMatchOption(t *testing.T) {
 			name:      "Options does not accept value",
 			flags:     flags("{-f}"),
 			args:      args("-f", "ion.so"),
-			fail:      false,
+			fail:      true,
 			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{},
-			},
+			options:   map[string][]string{},
 		},
 
 		// Option requires a value
@@ -432,8 +467,18 @@ func TestMatchLongOption(t *testing.T) {
 		Test{
 			flags:     flags("{--file}"),
 			args:      args("--file", "youpi"),
-			fail:      false,
+			fail:      true,
 			arguments: map[string][]string{},
+			options:   map[string][]string{},
+		},
+
+		Test{
+			flags: flags("{--file} {arg}"),
+			args:  args("--file", "youpi"),
+			fail:  false,
+			arguments: map[string][]string{
+				"arg": []string{"youpi"},
+			},
 			options: map[string][]string{
 				"file": []string{},
 			},
@@ -492,11 +537,9 @@ func TestMatchLongOption(t *testing.T) {
 		Test{
 			flags:     flags("{-file}"),
 			args:      args("--file", "ion.so"),
-			fail:      false,
+			fail:      true,
 			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{},
-			},
+			options:   map[string][]string{},
 		},
 
 		// Option requires a value
