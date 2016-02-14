@@ -2,18 +2,24 @@ package cli
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 )
 
 // Cli framework main struct
 type App struct {
 	Commands map[string]*Command
+	Writer   io.Writer
+	Reader   io.Reader
 }
 
 // Creates a new App struct and adds the null command to it
 func New() *App {
 	app := &App{
 		Commands: make(map[string]*Command, 0),
+		Writer:   os.Stdout,
+		Reader:   os.Stdin,
 	}
 	app.AddCommand(homeCommand)
 	return app
@@ -44,14 +50,14 @@ func (app *App) Run(args []string) {
 		matcher := newMatcher(args, cmd.Flags)
 
 		if err := matcher.match(); err != nil {
-			fmt.Println(err.Error())
+			fmt.Fprintln(app.Writer, err.Error())
 			return
 		}
 		cmd.Action(matcher.ctx)
 		return
 	}
 
-	fmt.Printf("Command `%s` was not found!", cmd)
+	fmt.Fprintf(app.Writer, "Command `%s` was not found!", cmd)
 }
 
 // Find the first argument from the os args
@@ -69,12 +75,12 @@ func homeCommand(app *App) *Command {
 	return &Command{
 		Name: "",
 		Action: func(ctx *Context) {
-			fmt.Println("Usage:")
-			fmt.Println("\tapp command [arguments]")
-			fmt.Println("The commands are:")
+			fmt.Fprintln(app.Writer, "Usage:")
+			fmt.Fprintln(app.Writer, "\tapp command [arguments]")
+			fmt.Fprintln(app.Writer, "The commands are:")
 			for _, cmd := range app.Commands {
 				if cmd.Name != "" {
-					fmt.Printf("\t%s - %s\n", cmd.Name, cmd.Description)
+					fmt.Fprintf(app.Writer, "\t%s - %s\n", cmd.Name, cmd.Description)
 				}
 			}
 		},
