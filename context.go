@@ -1,47 +1,41 @@
 package cli
 
+import "errors"
+
+// Context store the arguments and options and have attached helpers methods
+// to deal with console operations
 type Context struct {
-	// @todo: Replace string with some structure that will allow type conversion, i.e Arguments["arg"].ToInt64()
-	Arguments map[string][]string
-	Options   map[string][]string
+	Arguments map[string]*Result
+	Options   map[string]*Result
 }
 
 func newContext() *Context {
 	return &Context{
-		Arguments: make(map[string][]string, 0),
-		Options:   make(map[string][]string, 0),
+		Arguments: make(map[string]*Result, 0),
+		Options:   make(map[string]*Result, 0),
 	}
 }
 
 func (ctx *Context) reset() {
-	ctx.Arguments = map[string][]string{}
-	ctx.Options = map[string][]string{}
+	ctx.Arguments = map[string]*Result{}
+	ctx.Options = map[string]*Result{}
 }
 
 // Set argument with values
 func (ctx *Context) SetArgument(key string, values ...string) {
-	if len(values) == 0 {
-		values = []string{}
+	if ctx.Arguments[key] == nil {
+		ctx.Arguments[key] = &Result{}
 	}
-	ctx.Arguments[key] = values
-}
 
-// Append values to the argument
-func (ctx *Context) AppendToArgument(key string, value string) {
-	ctx.Arguments[key] = append(ctx.Arguments[key], value)
-}
-
-// Append value to the option
-func (ctx *Context) AppendToOption(key string, value string) {
-	ctx.Options[key] = append(ctx.Options[key], value)
+	ctx.Arguments[key].Append(values...)
 }
 
 // Set option with values
 func (ctx *Context) SetOption(key string, values ...string) {
-	if len(values) == 0 {
-		values = []string{}
+	if ctx.Options[key] == nil {
+		ctx.Options[key] = &Result{}
 	}
-	ctx.Options[key] = []string(values)
+	ctx.Options[key].Append(values...)
 }
 
 // Check if context has a specific option
@@ -58,4 +52,22 @@ func (ctx *Context) HasArgument(key string) bool {
 		return true
 	}
 	return false
+}
+
+// Get option from the context
+func (ctx *Context) Option(key string) (*Result, error) {
+	if _, ok := ctx.Options[key]; ok {
+		return ctx.Options[key], nil
+	}
+
+	return nil, errors.New("Option not present!")
+}
+
+// Get argument from the context
+func (ctx *Context) Argument(key string) (*Result, error) {
+	if _, ok := ctx.Arguments[key]; ok {
+		return ctx.Arguments[key], nil
+	}
+
+	return nil, errors.New("Argument not present!")
 }

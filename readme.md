@@ -29,10 +29,17 @@ func main() {
 func BuildCommand(app *cli.App) *cli.Command {
 	return &cli.Command{
 		Name:        "Build",
-		Signature:   "{a} {b} {c} {--ion=}",
+		Signature:   "{file} {--output=}",
 		Description: "Build this project",
 		Action: func(ctx *cli.Context) {
 			println("Build command!")
+
+			if opt, err := ctx.Option("output"); err == nil {
+				val, err2 := opt.Str()
+				if err2 == nil {
+					fmt.Printf("--output is present and has value=%s!", val)
+				}
+			}
 		},
 	}
 }
@@ -58,7 +65,7 @@ Todo List
 - [x] Optional argument / value for long option, i.e {file?}
 - [x] Array argument, i.e {files=*}
 - [x] Description for argument, i.e {file : This argument accept a string}
-- [ ] Options, i.e {-q}
+- [x] Options, i.e {-q}
 - [x] Array value for option
 - [x] Argument default value , i.e {user=johnny}
 - [x] Long Option default value, i.e {--queue=redis}

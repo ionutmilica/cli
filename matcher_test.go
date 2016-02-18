@@ -119,8 +119,8 @@ type Test struct {
 	args      []string
 	flags     []*Flag
 	fail      bool
-	arguments map[string][]string
-	options   map[string][]string
+	arguments map[string]*Result
+	options   map[string]*Result
 }
 
 func test(t *testing.T, tests []Test) {
@@ -151,10 +151,10 @@ func TestMatchArgument(t *testing.T) {
 			flags: flags("{file}"),
 			args:  args("file"),
 			fail:  false,
-			arguments: map[string][]string{
-				"file": []string{"file"},
+			arguments: map[string]*Result{
+				"file": &Result{"file"},
 			},
-			options: map[string][]string{},
+			options: map[string]*Result{},
 		},
 		// Two arguments
 		Test{
@@ -162,11 +162,11 @@ func TestMatchArgument(t *testing.T) {
 			flags: flags("{a} {b}"),
 			args:  args("ion", "maria"),
 			fail:  false,
-			arguments: map[string][]string{
-				"a": []string{"ion"},
-				"b": []string{"maria"},
+			arguments: map[string]*Result{
+				"a": &Result{"ion"},
+				"b": &Result{"maria"},
 			},
-			options: map[string][]string{},
+			options: map[string]*Result{},
 		},
 
 		// Optional argument
@@ -175,10 +175,10 @@ func TestMatchArgument(t *testing.T) {
 			flags: flags("{a?}"),
 			args:  args("test"),
 			fail:  false,
-			arguments: map[string][]string{
-				"a": []string{"test"},
+			arguments: map[string]*Result{
+				"a": &Result{"test"},
 			},
-			options: map[string][]string{},
+			options: map[string]*Result{},
 		},
 
 		// Optional argument with 0 provided
@@ -187,8 +187,8 @@ func TestMatchArgument(t *testing.T) {
 			flags:     flags("{a?}"),
 			args:      args(),
 			fail:      false,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Array argument
@@ -197,10 +197,10 @@ func TestMatchArgument(t *testing.T) {
 			flags: flags("{a*}"),
 			args:  args("ion", "maria"),
 			fail:  false,
-			arguments: map[string][]string{
-				"a": []string{"ion", "maria"},
+			arguments: map[string]*Result{
+				"a": &Result{"ion", "maria"},
 			},
-			options: map[string][]string{},
+			options: map[string]*Result{},
 		},
 
 		// Array argument with 0 received - Fail
@@ -209,8 +209,8 @@ func TestMatchArgument(t *testing.T) {
 			flags:     flags("{a*}"),
 			args:      args(),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Optional Array argument with 0 received
@@ -220,8 +220,8 @@ func TestMatchArgument(t *testing.T) {
 			flags:     flags("{a?*}"),
 			args:      args(),
 			fail:      false,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Optional Array argument
@@ -230,10 +230,10 @@ func TestMatchArgument(t *testing.T) {
 			flags: flags("{a?*}"),
 			args:  args("a", "b", "c", "d"),
 			fail:  false,
-			arguments: map[string][]string{
-				"a": []string{"a", "b", "c", "d"},
+			arguments: map[string]*Result{
+				"a": &Result{"a", "b", "c", "d"},
 			},
-			options: map[string][]string{},
+			options: map[string]*Result{},
 		},
 
 		// Argument default value
@@ -242,10 +242,10 @@ func TestMatchArgument(t *testing.T) {
 			flags: flags("{a==test}"),
 			args:  args(),
 			fail:  false,
-			arguments: map[string][]string{
-				"a": []string{"=test"},
+			arguments: map[string]*Result{
+				"a": &Result{"=test"},
 			},
-			options: map[string][]string{},
+			options: map[string]*Result{},
 		},
 	}
 
@@ -260,8 +260,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f}"),
 			args:      args("file"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// One match
@@ -270,9 +270,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f}"),
 			args:      args("-f"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{},
 			},
 		},
 
@@ -282,8 +282,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f}"),
 			args:      args("-f", "youpi"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Match only the flag
@@ -292,11 +292,11 @@ func TestMatchOption(t *testing.T) {
 			flags: flags("{-f} {arg}"),
 			args:  args("-f", "youpi"),
 			fail:  false,
-			arguments: map[string][]string{
-				"arg": []string{"youpi"},
+			arguments: map[string]*Result{
+				"arg": &Result{"youpi"},
 			},
-			options: map[string][]string{
-				"f": []string{},
+			options: map[string]*Result{
+				"f": &Result{},
 			},
 		},
 
@@ -306,11 +306,11 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f} {-j} {-s}"),
 			args:      args("-fjs"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{},
-				"j": []string{},
-				"s": []string{},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{},
+				"j": &Result{},
+				"s": &Result{},
 			},
 		},
 
@@ -319,8 +319,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f} {-j}"),
 			args:      args("-fjs"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		Test{
@@ -328,8 +328,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f} {-j} {-s}"),
 			args:      args("-fjs=da"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Match optional value option
@@ -338,9 +338,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=}"),
 			args:      args("-f"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{},
 			},
 		},
 
@@ -349,9 +349,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=}"),
 			args:      args("-f=dada"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{"dada"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{"dada"},
 			},
 		},
 
@@ -360,9 +360,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=}"),
 			args:      args("-f", "dada"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{"dada"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{"dada"},
 			},
 		},
 
@@ -372,8 +372,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags(""),
 			args:      args("-f"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Option does not accept a value
@@ -383,8 +383,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f}"),
 			args:      args("-f=ion.so"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		Test{
@@ -392,8 +392,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f}"),
 			args:      args("-f", "ion.so"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Option requires a value
@@ -402,16 +402,16 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=+}"),
 			args:      args("-f"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 		Test{
 			flags:     flags("{-f=+}"),
 			args:      args("-f", "22", "-f", "something"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{"22", "something"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{"22", "something"},
 			},
 		},
 
@@ -421,9 +421,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=ion}"),
 			args:      args("--f"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{"ion"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{"ion"},
 			},
 		},
 
@@ -432,9 +432,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=ion}"),
 			args:      args(),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{"ion"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{"ion"},
 			},
 		},
 
@@ -444,9 +444,9 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{--f=*}"),
 			args:      args("-f", "ionut", "-f", "ion"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"f": []string{"ionut", "ion"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"f": &Result{"ionut", "ion"},
 			},
 		},
 
@@ -454,8 +454,8 @@ func TestMatchOption(t *testing.T) {
 			flags:     flags("{-f=}"),
 			args:      args("-f", "ionut", "-f", "ion"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 	}
 
@@ -469,17 +469,17 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file}"),
 			args:      args("file"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 		// Match
 		Test{
 			flags:     flags("{--file}"),
 			args:      args("--file"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{},
 			},
 		},
 
@@ -488,19 +488,19 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file}"),
 			args:      args("--file", "youpi"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		Test{
 			flags: flags("{--file} {arg}"),
 			args:  args("--file", "youpi"),
 			fail:  false,
-			arguments: map[string][]string{
-				"arg": []string{"youpi"},
+			arguments: map[string]*Result{
+				"arg": &Result{"youpi"},
 			},
-			options: map[string][]string{
-				"file": []string{},
+			options: map[string]*Result{
+				"file": &Result{},
 			},
 		},
 
@@ -509,9 +509,9 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=}"),
 			args:      args("--file"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{},
 			},
 		},
 
@@ -519,9 +519,9 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=}"),
 			args:      args("--file=dada"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{"dada"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{"dada"},
 			},
 		},
 
@@ -529,9 +529,9 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=}"),
 			args:      args("--file", "dada"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{"dada"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{"dada"},
 			},
 		},
 
@@ -540,8 +540,8 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags(""),
 			args:      args("--file"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Option does not accept a value
@@ -549,8 +549,8 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file}"),
 			args:      args("--file=ion.so"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Option does not accept a value
@@ -558,8 +558,8 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{-file}"),
 			args:      args("--file", "ion.so"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		// Option requires a value
@@ -567,17 +567,17 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=+}"),
 			args:      args("--file"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
 		},
 
 		Test{
 			flags:     flags("{--file=+}"),
 			args:      args("--file=22", "--file", "something"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{"22", "something"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{"22", "something"},
 			},
 		},
 
@@ -586,9 +586,9 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=ion}"),
 			args:      args("--file"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{"ion"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{"ion"},
 			},
 		},
 
@@ -597,9 +597,9 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=*}"),
 			args:      args("--file=ionut", "--file=ion"),
 			fail:      false,
-			arguments: map[string][]string{},
-			options: map[string][]string{
-				"file": []string{"ionut", "ion"},
+			arguments: map[string]*Result{},
+			options: map[string]*Result{
+				"file": &Result{"ionut", "ion"},
 			},
 		},
 
@@ -607,8 +607,28 @@ func TestMatchLongOption(t *testing.T) {
 			flags:     flags("{--file=}"),
 			args:      args("--file=ionut", "--file=ion"),
 			fail:      true,
-			arguments: map[string][]string{},
-			options:   map[string][]string{},
+			arguments: map[string]*Result{},
+			options:   map[string]*Result{},
+		},
+	}
+
+	test(t, tests)
+}
+
+func TestCombined(t *testing.T) {
+
+	tests := []Test{
+		Test{
+			name:  "{file} {--output=}",
+			flags: flags("{file} {--output=}"),
+			args:  args("input.in", "--output=out.exe"),
+			fail:  false,
+			arguments: map[string]*Result{
+				"file": &Result{"input.in"},
+			},
+			options: map[string]*Result{
+				"output": &Result{"out.exe"},
+			},
 		},
 	}
 

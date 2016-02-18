@@ -89,14 +89,14 @@ func (m *matcher) validate() error {
 	// Set arguments with default value
 	for _, flag := range m.mgr.arguments {
 		if _, ok := m.ctx.Arguments[flag.name]; !ok && flag.value != "" {
-			m.ctx.Arguments[flag.name] = []string{flag.value}
+			m.ctx.SetArgument(flag.name, flag.value)
 		}
 	}
 
 	// Set flags with default value
 	for _, flag := range m.mgr.options {
 		if _, ok := m.ctx.Options[flag.name]; !ok && flag.value != "" {
-			m.ctx.Options[flag.name] = []string{flag.value}
+			m.ctx.SetOption(flag.name, flag.value)
 		}
 	}
 	requiredArgs := m.mgr.requiredArgs()
@@ -186,7 +186,8 @@ func (m *matcher) matchOption(arg string) error {
 		if !option.isArray() {
 			return m.fail("The `--%s` option does not accept an array of values!", arg)
 		}
-		m.ctx.AppendToOption(arg, value)
+		// Append to option
+		m.ctx.SetOption(arg, value)
 	} else {
 		m.ctx.SetOption(arg)
 	}
@@ -201,7 +202,7 @@ func (m *matcher) matchArgument(arg string) error {
 	if m.mgr.hasArgument(current) {
 		m.ctx.SetArgument(m.mgr.argument(current).name, arg)
 	} else if m.mgr.hasArgument(current-1) && m.mgr.argument(current-1).isArray() {
-		m.ctx.AppendToArgument(m.mgr.argument(current-1).name, arg)
+		m.ctx.SetArgument(m.mgr.argument(current-1).name, arg)
 	} else {
 		return m.fail("To many arguments!")
 	}
