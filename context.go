@@ -1,6 +1,11 @@
 package cli
 
-import "errors"
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+)
 
 // Context store the arguments and options and have attached helpers methods
 // to deal with console operations
@@ -70,4 +75,15 @@ func (ctx *Context) Argument(key string) (*Result, error) {
 	}
 
 	return nil, errors.New("Argument not present!")
+}
+
+func (ctx *Context) Ask(msg string) string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Fprintf(os.Stdout, msg)
+	text, err := reader.ReadString('\n')
+
+	if err != nil {
+		return ""
+	}
+	return text
 }

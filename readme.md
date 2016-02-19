@@ -50,8 +50,9 @@ func ClearCommand(app *cli.App) *cli.Command {
 		Signature:   "{what=.}",
 		Description: "Clears something from the project",
 		Action: func(ctx *cli.Context) {
-			fmt.Println(ctx)
-			println("Clear command!")
+			// Helpers example
+			name := ctx.Ask("Insert your name: ")
+			fmt.Println(name)
 		},
 	}
 }
