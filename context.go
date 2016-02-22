@@ -3,8 +3,7 @@ package cli
 import (
 	"bufio"
 	"errors"
-	"fmt"
-	"os"
+	"io"
 )
 
 // Context store the arguments and options and have attached helpers methods
@@ -12,12 +11,16 @@ import (
 type Context struct {
 	Arguments map[string]*Result
 	Options   map[string]*Result
+	Reader    io.Reader
+	Writer    io.Writer
 }
 
-func newContext() *Context {
+func newContext(reader io.Reader, writer io.Writer) *Context {
 	return &Context{
 		Arguments: make(map[string]*Result, 0),
 		Options:   make(map[string]*Result, 0),
+		Reader:    reader,
+		Writer:    writer,
 	}
 }
 
@@ -78,12 +81,12 @@ func (ctx *Context) Argument(key string) (*Result, error) {
 }
 
 func (ctx *Context) Ask(msg string) string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Fprintf(os.Stdout, msg)
+	reader := bufio.NewReader(ctx.Reader)
 	text, err := reader.ReadString('\n')
 
 	if err != nil {
 		return ""
 	}
+
 	return text
 }

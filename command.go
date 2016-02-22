@@ -6,6 +6,6 @@ type Command struct {
 	Description string
 	Author      string
 	Signature   string
-	Flags       []*Flag
+	Flags       FlagList
 	Action      func(*Context)
 }

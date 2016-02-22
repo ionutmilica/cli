@@ -2,14 +2,19 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 )
 
 // Helpers
 
+func makeContext() *Context {
+	return newContext(os.Stdin, os.Stdout)
+}
+
 // Convert signature to flags for compact tests
-func flags(signature string) []*Flag {
+func flags(signature string) FlagList {
 	cmd := Command{
 		Signature: signature,
 	}
@@ -23,7 +28,7 @@ func args(args ...string) []string {
 }
 
 func TestNewMatcher(t *testing.T) {
-	m := newMatcher(args("--ion"), flags("{--ion}"))
+	m := newMatcher(makeContext(), args("--ion"), flags("{--ion}"))
 
 	if m == nil {
 		t.Error("Matched not created!")
@@ -35,13 +40,13 @@ func TestNewMatcher(t *testing.T) {
 }
 
 func TestHasNext(t *testing.T) {
-	m := newMatcher(args("--ion"), flags("{--ion}"))
+	m := newMatcher(makeContext(), args("--ion"), flags("{--ion}"))
 
 	if !m.hasNext() {
 		t.Errorf("Matcher got hasNext but that's false!")
 	}
 
-	m = newMatcher(args(), flags(""))
+	m = newMatcher(makeContext(), args(), flags(""))
 
 	if m.hasNext() {
 		t.Errorf("Matcher expected false value for hasNext but got true!")
@@ -49,7 +54,7 @@ func TestHasNext(t *testing.T) {
 }
 
 func TestCurrentMethod(t *testing.T) {
-	m := newMatcher(args("--ion"), flags("{--ion}"))
+	m := newMatcher(makeContext(), args("--ion"), flags("{--ion}"))
 
 	if m.current() != "--ion" {
 		t.Errorf("Expected current value `--ion` but got `%s`!", m.current())
@@ -57,7 +62,7 @@ func TestCurrentMethod(t *testing.T) {
 }
 
 func TestPeekMethod(t *testing.T) {
-	m := newMatcher(args("--ion"), flags("{--ion}"))
+	m := newMatcher(makeContext(), args("--ion"), flags("{--ion}"))
 
 	if _, err := m.peek(); err == nil {
 		t.Errorf("Peek should have failed!")
@@ -65,7 +70,7 @@ func TestPeekMethod(t *testing.T) {
 }
 
 func TestNextMethod(t *testing.T) {
-	m := newMatcher(args("--ion"), flags("{--ion}"))
+	m := newMatcher(makeContext(), args("--ion"), flags("{--ion}"))
 
 	if m.cursor != 0 {
 		t.Errorf("Matcher should have cursor = 0 in initial state!")
@@ -85,7 +90,7 @@ func TestNextMethod(t *testing.T) {
 }
 
 func TestValidateMethod(t *testing.T) {
-	m := newMatcher(args("file1"), flags("{file} {file2}"))
+	m := newMatcher(makeContext(), args("file1"), flags("{file} {file2}"))
 	err := m.match()
 
 	if err == nil || err.Error() != "Not enough arguments (missing: file2)." {
@@ -93,7 +98,7 @@ func TestValidateMethod(t *testing.T) {
 		t.Errorf("Received wrong error response for not enough provided args!")
 	}
 
-	m = newMatcher(args("file1", "file2"), flags("{file} {file2}"))
+	m = newMatcher(makeContext(), args("file1", "file2"), flags("{file} {file2}"))
 	err = m.match()
 
 	if err != nil {
@@ -102,7 +107,7 @@ func TestValidateMethod(t *testing.T) {
 }
 
 func TestToManyArguments(t *testing.T) {
-	m := newMatcher(args("file1", "file2"), flags("{file2}"))
+	m := newMatcher(makeContext(), args("file1", "file2"), flags("{file2}"))
 	err := m.match()
 
 	if err == nil || err.Error() != "To many arguments!" {
@@ -125,7 +130,7 @@ type Test struct {
 
 func test(t *testing.T, tests []Test) {
 	for i, test := range tests {
-		m := newMatcher(test.args, test.flags)
+		m := newMatcher(makeContext(), test.args, test.flags)
 		err := m.match()
 
 		if test.fail && err == nil {

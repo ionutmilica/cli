@@ -7,18 +7,18 @@ import (
 )
 
 type matcher struct {
-	ctx *Context
-	mgr *FlagMgr
+	ctx   *Context
+	flags FlagList
 
 	//
 	args   []string
 	cursor int
 }
 
-func newMatcher(args []string, flags []*Flag) *matcher {
+func newMatcher(ctx *Context, args []string, flags FlagList) *matcher {
 	matcher := &matcher{
-		ctx:    newContext(),
-		mgr:    newFlagMgr(flags),
+		ctx:    ctx,
+		flags:  flags,
 		args:   args,
 		cursor: 0,
 	}
@@ -87,19 +87,25 @@ func (m *matcher) match() error {
 func (m *matcher) validate() error {
 
 	// Set arguments with default value
-	for _, flag := range m.mgr.arguments {
+	for _, flag := range m.flags {
+		if !flag.isArgument() {
+			continue
+		}
 		if _, ok := m.ctx.Arguments[flag.name]; !ok && flag.value != "" {
 			m.ctx.SetArgument(flag.name, flag.value)
 		}
 	}
 
 	// Set flags with default value
-	for _, flag := range m.mgr.options {
+	for _, flag := range m.flags {
+		if flag.isArgument() {
+			continue
+		}
 		if _, ok := m.ctx.Options[flag.name]; !ok && flag.value != "" {
 			m.ctx.SetOption(flag.name, flag.value)
 		}
 	}
-	requiredArgs := m.mgr.requiredArgs()
+	requiredArgs := m.flags.requiredArgs()
 
 	if len(requiredArgs) <= len(m.ctx.Arguments) {
 		return nil
@@ -150,11 +156,11 @@ func (m *matcher) matchOption(arg string) error {
 		}
 	}
 
-	if !m.mgr.hasOption(arg) {
+	option := m.flags.option(arg)
+
+	if option == nil {
 		return m.fail("The `--%s` option does not exist.", arg)
 	}
-
-	option := m.mgr.option(arg)
 
 	if value != "" && !option.acceptValue() {
 		return m.fail("The `--%s` option does not accept a value!", arg)
@@ -196,13 +202,13 @@ func (m *matcher) matchOption(arg string) error {
 }
 
 // Parse strings that are not starting with - as arguments and group them according to the signature
-func (m *matcher) matchArgument(arg string) error {
+func (m *matcher) matchArgument(argName string) error {
 	current := len(m.ctx.Arguments)
 
-	if m.mgr.hasArgument(current) {
-		m.ctx.SetArgument(m.mgr.argument(current).name, arg)
-	} else if m.mgr.hasArgument(current-1) && m.mgr.argument(current-1).isArray() {
-		m.ctx.SetArgument(m.mgr.argument(current-1).name, arg)
+	if arg := m.flags.argument(current); arg != nil {
+		m.ctx.SetArgument(arg.name, argName)
+	} else if arg := m.flags.argument(current - 1); arg != nil && arg.isArray() {
+		m.ctx.SetArgument(arg.name, argName)
 	} else {
 		return m.fail("To many arguments!")
 	}

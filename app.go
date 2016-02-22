@@ -46,8 +46,8 @@ func (app *App) Run(args []string) {
 
 	if cmd, ok := app.Commands[cmd]; ok {
 		cmd.parse()
-
-		matcher := newMatcher(args, cmd.Flags)
+		ctx := newContext(app.Reader, app.Writer)
+		matcher := newMatcher(ctx, args, cmd.Flags)
 
 		if err := matcher.match(); err != nil {
 			fmt.Fprintln(app.Writer, err.Error())

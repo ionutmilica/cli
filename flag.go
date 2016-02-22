@@ -27,12 +27,6 @@ type Flag struct {
 	options     int8
 	description string
 	value       string
-	data        []string
-}
-
-func (f Flag) ToStr(i ...int) string {
-	index := getIndex(i)
-	return f.data[index]
 }
 
 // Check if the flag is an argument
@@ -87,11 +81,50 @@ func (f Flag) String() string {
 	return f.name
 }
 
-//
-func getIndex(i []int) int {
-	index := 0
-	if len(i) > 0 {
-		index = i[0]
+/** Flag list **/
+
+type FlagList []*Flag
+
+// Append flag to the flag list
+func (fl *FlagList) Append(flags ...*Flag) {
+	*fl = append(*fl, flags...)
+}
+
+// Get arguments that are required
+func (fl *FlagList) requiredArgs() []string {
+	flags := []string{}
+
+	for _, arg := range *fl {
+		if arg.isArgument() && arg.isRequired() {
+			flags = append(flags, arg.name)
+		}
 	}
-	return index
+
+	return flags
+}
+
+// Find the argument number `pos` from the list of the flags. Options will be skipped
+func (fl *FlagList) argument(pos int) *Flag {
+	current := 0
+	for _, arg := range *fl {
+		if arg.isArgument() {
+			if current == pos {
+				return arg
+			}
+			current++
+		} else {
+			continue
+		}
+	}
+	return nil
+}
+
+// Find option by name. Arguments will be skipped
+func (fl *FlagList) option(opt string) *Flag {
+	for _, flag := range *fl {
+		if !flag.isArgument() && flag.name == opt {
+			return flag
+		}
+	}
+	return nil
 }
