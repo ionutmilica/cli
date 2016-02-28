@@ -122,7 +122,7 @@ func TestToManyArguments(t *testing.T) {
 type Test struct {
 	name      string
 	args      []string
-	flags     []*Flag
+	flags     FlagList
 	fail      bool
 	arguments map[string]*Result
 	options   map[string]*Result

@@ -10,7 +10,7 @@ func makeCmd(signature string) Command {
 	}
 }
 
-func toFlags(signature string) []*Flag {
+func toFlags(signature string) FlagList {
 	cmd := makeCmd(signature)
 	cmd.parse()
 	return cmd.Flags
