@@ -3,9 +3,11 @@ package cli
 import (
 	"bufio"
 	"errors"
-	"io"
 	"fmt"
+	"io"
 )
+
+type Handler func(*Context)
 
 // Context store the arguments and options and have attached helpers methods
 // to deal with console operations
@@ -14,14 +16,38 @@ type Context struct {
 	Options   map[string]*Result
 	Reader    io.Reader
 	Writer    io.Writer
+
+	handlers []Handler
+	cursor   int
 }
 
-func newContext(reader io.Reader, writer io.Writer) *Context {
+// Creates a new context
+// It needs: reader, writer, arguments map and option map
+func newContext(reader io.Reader, writer io.Writer, args map[string]*Result, opts map[string]*Result) *Context {
 	return &Context{
-		Arguments: make(map[string]*Result, 0),
-		Options:   make(map[string]*Result, 0),
+		Arguments: args,
+		Options:   opts,
 		Reader:    reader,
 		Writer:    writer,
+	}
+}
+
+// Add new handlers to the end of the chain
+func (ctx *Context) AppendHandler(handlers ...Handler) {
+	ctx.handlers = append(ctx.handlers, handlers...)
+}
+
+// Triggers the next handler in the chain
+func (ctx *Context) Next() {
+	ctx.cursor++
+	ctx.Run()
+}
+
+// Run the handler as position `cursor`
+// This will execute handlers one by one until a handler with no ctx.Next() is found
+func (ctx *Context) Run() {
+	if len(ctx.handlers) > ctx.cursor {
+		ctx.handlers[ctx.cursor](ctx)
 	}
 }
 
@@ -76,8 +102,12 @@ func (ctx *Context) Argument(key string) (*Result, error) {
 	return nil, errors.New("Argument not present!")
 }
 
+// Display a message then waits for an answer
 func (ctx *Context) Ask(msg string) string {
-	fmt.Fprint(ctx.Writer, msg);
+	// Display the message
+	fmt.Fprint(ctx.Writer, msg)
+
+	// Create a new reader from ctx.Reader and wait for the response
 	reader := bufio.NewReader(ctx.Reader)
 	text, err := reader.ReadString('\n')
 

@@ -12,6 +12,8 @@ type App struct {
 	Commands map[string]*Command
 	Writer   io.Writer
 	Reader   io.Reader
+
+	DefaultCmd *Command
 }
 
 // Creates a new App struct and adds the null command to it
@@ -53,10 +55,10 @@ func (app *App) Run(args []string) {
 			return
 		}
 
-		ctx := newContext(app.Reader, app.Writer)
-		ctx.Arguments = matcher.arguments
-		ctx.Options = matcher.options
-		cmd.Action(ctx)
+		ctx := newContext(app.Reader, app.Writer, matcher.arguments, matcher.options)
+		ctx.AppendHandler(cmd.Action)
+		ctx.Run()
+
 		return
 	}
 

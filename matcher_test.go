@@ -2,16 +2,11 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 )
 
 // Helpers
-
-func makeContext() *Context {
-	return newContext(os.Stdin, os.Stdout)
-}
 
 // Convert signature to flags for compact tests
 func flags(signature string) FlagList {

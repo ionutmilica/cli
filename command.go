@@ -7,5 +7,5 @@ type Command struct {
 	Author      string
 	Signature   string
 	Flags       FlagList
-	Action      func(*Context)
+	Action      Handler
 }
