@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"fmt"
 )
 
 // Context store the arguments and options and have attached helpers methods
@@ -22,11 +23,6 @@ func newContext(reader io.Reader, writer io.Writer) *Context {
 		Reader:    reader,
 		Writer:    writer,
 	}
-}
-
-func (ctx *Context) reset() {
-	ctx.Arguments = map[string]*Result{}
-	ctx.Options = map[string]*Result{}
 }
 
 // Set argument with values
@@ -81,6 +77,7 @@ func (ctx *Context) Argument(key string) (*Result, error) {
 }
 
 func (ctx *Context) Ask(msg string) string {
+	fmt.Fprint(ctx.Writer, msg);
 	reader := bufio.NewReader(ctx.Reader)
 	text, err := reader.ReadString('\n')
 
